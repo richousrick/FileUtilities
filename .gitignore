@@ -1,3 +1,9 @@
 # Project exclude paths
 /project/target/
 /target/
+
+#Intellij idea
+.idea/
+
+#sbt
+.bsp/
