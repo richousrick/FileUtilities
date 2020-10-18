@@ -7,7 +7,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
 
 class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
-	var fs: FileSystem = _
 	var targetFile: Path = _
 	var backupDir: Path = _
 	var propLoc: Path = _
@@ -15,12 +14,12 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 
 	override def beforeEach() {
 		// Gen mock file system containing target file
-		MockUtils.generateMockFilesystemWin() match {
+		val fs: FileSystem = MockUtils.generateMockFilesystemWin() match {
 			case (a, b, c) =>
-				fs = a
 				targetFile = b
 				backupDir = c
-			case _ =>
+				a
+			case _ => throw new UnsupportedOperationException()
 		}
 		propLoc = fs.getPath(backupDir + "\\versions.properties")
 
