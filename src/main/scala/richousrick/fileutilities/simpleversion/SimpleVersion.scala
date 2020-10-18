@@ -1,5 +1,7 @@
 package richousrick.fileutilities.simpleversion
 
+import java.io.IOException
+import java.nio.file.{Files, Path}
 import java.util.Properties
 
 object SimpleVersion {
@@ -16,5 +18,33 @@ object SimpleVersion {
 		prop.setProperty("backupFile", backupFile)
 		prop.setProperty("useLinks", useLinks + "")
 		prop
+	}
+
+	/**
+	 * Moves the backup file to the backup folder and creates a hard link in its place referring to its new position
+	 *
+	 * @param backupFolder location to store the current instance
+	 * @param targetFile   file to be moved and replaced with a hard link
+	 * @return true if successful
+	 */
+	def initLink(backupFolder: Path, targetFile: Path): Boolean = {
+		val backupInstance = backupFolder.resolve("currentVersionInstance.current")
+		try {
+			Files.move(targetFile, backupInstance)
+		} catch {
+			case e@(_: IOException | _: SecurityException) =>
+				System.err.println(s"Could not move current instance to backup folder ${e.getLocalizedMessage}")
+				return false
+		}
+
+		try {
+			Files.createSymbolicLink(targetFile, backupInstance)
+			true
+		} catch {
+			case e@(_: IOException | _: SecurityException) =>
+				System.err
+					.println(s"Could not create a link to the current instance from the backup folder ${e.getLocalizedMessage}")
+				false
+		}
 	}
 }
