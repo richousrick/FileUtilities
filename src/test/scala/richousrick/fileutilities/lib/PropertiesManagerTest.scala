@@ -23,14 +23,15 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 		}
 		propLoc = fs.getPath(backupDir + "\\versions.properties")
 
-		// generate default config and write it to the target directory
+		// generate default config
 		prop = new Properties()
 		prop.setProperty("Lorem", "Ipsum")
 		prop.setProperty("dolor", "sit ")
-		PropertiesManager.writeConfig(propLoc, prop)
 	}
 
 	test("Create and read new config file") {
+		assert(PropertiesManager.writeConfig(propLoc, prop))
+
 		// test the config file was created, and when loaded is identical to the
 		assert(Files.exists(propLoc))
 		val loadedProps = PropertiesManager.readConfig(propLoc)
@@ -39,6 +40,8 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 	}
 
 	test("Overwrite and read config file") {
+		assert(PropertiesManager.writeConfig(propLoc, prop))
+
 		// assert current props match stored props
 		assert(PropertiesManager.readConfig(propLoc).get == prop)
 
@@ -49,5 +52,9 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 		// rewrite and verify they match again
 		PropertiesManager.writeConfig(propLoc, prop)
 		assert(PropertiesManager.readConfig(propLoc).get == prop)
+	}
+
+	test("Try to load config from non existent file") {
+		assert(PropertiesManager.readConfig(propLoc).isEmpty)
 	}
 }
