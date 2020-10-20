@@ -1,7 +1,7 @@
 package richousrick.fileutilities.lib
 
 import java.nio.channels.{Channels, FileChannel}
-import java.nio.file.{Path, StandardOpenOption}
+import java.nio.file.{Files, Path, StandardOpenOption}
 import java.util.Properties
 
 import scala.util.{Failure, Success, Using}
@@ -20,9 +20,13 @@ object PropertiesManager {
 	 */
 	def writeConfig(configFile: Path, prop: Properties): Boolean =
 		Using.Manager { use =>
+
+			// create parent dir if missing
+			Files.createDirectories(configFile.getParent)
+
 			val channel = use(FileChannel.open(configFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE))
 			use(channel.lock())
-
+			
 			prop.store(Channels.newOutputStream(channel), null)
 		} match {
 			case Failure(exception) =>
