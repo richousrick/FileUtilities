@@ -23,10 +23,14 @@ class SimpleHotswapTest extends AnyFunSuite {
 		testParams("""D:\some\path\to the\File\""", useLinks = true)
 	}
 
-	test("Setup a linked backup file") {
-		val (_, targetFile, backupDir) = MockUtils.generateMockFilesystemWin()
+	test("Setup a symbolic linked backup file") {
+		val (fs, targetFile) = MockUtils.generateMockFilesystemWin()
+		val backupDir = fs.getPath("""C:\data\backup""")
 		val fileContents = Files.readAllLines(targetFile).asScala
 		val backupInstance = backupDir.resolve("currentVersionInstance.current")
+
+		// create backup folder
+		Files.createDirectories(backupDir)
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
@@ -42,43 +46,28 @@ class SimpleHotswapTest extends AnyFunSuite {
 		assert(Files.readSymbolicLink(targetFile) == backupInstance)
 	}
 
-	test("Setup a linked backup directory") {
-		var (fs, targetFile, backupDir) = MockUtils.generateMockFilesystemWin()
-
-		// setup inner directory structure
-		var fileContents = Map[String, Array[Byte]](
-			"misc\\SomeFile" -> "This is another file with some stuff in it".getBytes(),
-			"misc\\AnotherFile.bash" -> "echo \"The Third File.\nThe purpose of this is to emulate multiple nested files.\"".getBytes()
-		)
-		Files.createDirectories(targetFile.getParent.resolve("misc"))
-		fileContents.foreach(f => Files.write(targetFile.getParent.resolve(f._1), f._2))
-
-		fileContents += targetFile.getFileName.toString -> Files.readAllLines(targetFile).asScala.mkString("\n").getBytes()
-		targetFile = targetFile.getParent
+	test("Setup a symbolic linked backup directory") {
+		val (fs, targetFile, filesToBackup) = MockUtils.generateMockFilesystemWinDir()
+		val backupDir = fs.getPath("""C:\data\backup""")
 		val backupInstance = backupDir.resolve("currentVersionInstance.current")
+
+
+		// create backup folder
+		Files.createDirectories(backupDir)
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
 		SimpleHotswap.initLink(backupDir, targetFile)
 
 		// assert the file was successfully copied to the backup folder
-		fileContents.foreach(f => assert(Files.readAllLines(targetFile.resolve(f._1)).asScala.mkString("\n") == f
-			._2
-			.map(_.toChar)
-			.mkString))
+		// Convert both to string instead of for easier readability in print
+		filesToBackup.foreach(f => assert(Files.readAllBytes(
+			backupInstance.resolve(f._1)).map(_.toChar).mkString ==
+			f._2.map(_.toChar).mkString))
 
 		// assert no other files exsist
-		assert(Files
-			.list(targetFile.resolve("misc"))
-			.iterator()
-			.asScala
-			.map("misc\\" + _.getFileName.toString)
-			.toSet == Set("misc\\SomeFile", "misc\\AnotherFile.bash"))
-		fileContents -= "misc\\SomeFile"
-		fileContents -= "misc\\AnotherFile.bash"
-		fileContents += "misc" -> Array()
-		assert(Files.list(targetFile).iterator().asScala.map(_.getFileName.toString).toSet == fileContents.keySet)
-
+		assert(Files.walk(backupInstance).map(_.getFileName.toString).toArray.toSet
+			== filesToBackup.keySet.map(_.getFileName.toString) ++ Set("currentVersionInstance.current", "misc"))
 
 		// test link was created successfully
 		assert(Files.isSymbolicLink(targetFile))

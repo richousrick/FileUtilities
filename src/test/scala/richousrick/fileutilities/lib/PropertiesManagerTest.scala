@@ -15,12 +15,12 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 	override def beforeEach() {
 		// Gen mock file system containing target file
 		val fs: FileSystem = MockUtils.generateMockFilesystemWin() match {
-			case (a, b, c) =>
+			case (a, b) =>
 				targetFile = b
-				backupDir = c
 				a
 			case _ => throw new UnsupportedOperationException()
 		}
+		backupDir = fs.getPath("""C:\data\backup""")
 		propLoc = fs.getPath(backupDir + "\\versions.properties")
 
 		// generate default config
