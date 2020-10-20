@@ -26,8 +26,9 @@ object PropertiesManager {
 
 			val channel = use(FileChannel.open(configFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE))
 			use(channel.lock())
-			
-			prop.store(Channels.newOutputStream(channel), null)
+			val out = use(Channels.newOutputStream(channel))
+
+			prop.store(out, null)
 		} match {
 			case Failure(exception) =>
 				System.err.println(s"Could not create config file: $exception")
@@ -46,9 +47,9 @@ object PropertiesManager {
 		Using.Manager { use =>
 			val channel = use(FileChannel.open(configFile, StandardOpenOption.READ))
 			use(channel.lock(0L, Long.MaxValue, true))
-
+			val in = use(Channels.newInputStream(channel))
 			val prop = new Properties()
-			prop.load(Channels.newInputStream(channel))
+			prop.load(in)
 			prop
 		} match {
 			case Failure(exception) =>
