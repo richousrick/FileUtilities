@@ -1,4 +1,4 @@
-package richousrick.fileutilities.simpleversion
+package richousrick.fileutilities.simplehotswap
 
 import java.nio.file.Files
 
@@ -7,11 +7,11 @@ import richousrick.fileutilities.lib.MockUtils
 
 import scala.jdk.CollectionConverters._
 
-class SimpleVersionTest extends AnyFunSuite {
+class SimpleHotswapTest extends AnyFunSuite {
 
 	test("Setup config should create correct properties") {
 		def testParams(path: String, useLinks: Boolean) = {
-			val prop = SimpleVersion.setupConfig(path, useLinks)
+			val prop = SimpleHotswap.setupConfig(path, useLinks)
 			assert(prop.propertyNames().asScala.toSet == Set("backupFile", "useLinks"))
 			assert(prop.getProperty("backupFile") == path)
 			assert(prop.getProperty("useLinks") == useLinks + "")
@@ -30,7 +30,7 @@ class SimpleVersionTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		SimpleVersion.initLink(backupDir, targetFile)
+		SimpleHotswap.initLink(backupDir, targetFile)
 
 		// assert the file was successfully copied to the backup folder
 		assert(Files.list(backupDir).count() == 1)
@@ -59,7 +59,7 @@ class SimpleVersionTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		SimpleVersion.initLink(backupDir, targetFile)
+		SimpleHotswap.initLink(backupDir, targetFile)
 
 		// assert the file was successfully copied to the backup folder
 		fileContents.foreach(f => assert(Files.readAllLines(targetFile.resolve(f._1)).asScala.mkString("\n") == f

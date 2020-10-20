@@ -1,10 +1,13 @@
-package richousrick.fileutilities.simpleversion
+package richousrick.fileutilities.simplehotswap
 
 import java.io.IOException
 import java.nio.file.{Files, Path}
 import java.util.Properties
 
-object SimpleVersion {
+/**
+ * Simple tool to handle hot swapping of different versions of a file or directory
+ */
+object SimpleHotswap {
 
 	/**
 	 * Creates a new config file for the tool to use
