@@ -104,8 +104,8 @@ class SimpleHotswapTest extends AnyFunSuite {
 			out.write("Hello".getBytes)
 		}
 
-		assert(Files.readAllBytes(backupInstance) != original)
-		assert(Files.readAllBytes(targetFile).toSeq == Files.readAllBytes(backupInstance).toSeq)
+		assert(!(Files.readAllBytes(backupInstance) sameElements original))
+		assert(Files.readAllBytes(targetFile) sameElements Files.readAllBytes(backupInstance))
 	}
 
 	test("Setup a hard linked backup directory") {
