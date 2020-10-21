@@ -36,7 +36,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		SimpleHotswap.initLink(backupDir, targetFile, hard = false)
+		assert(SimpleHotswap.initLink(backupDir, targetFile, hard = false))
 
 		// assert the file was successfully copied to the backup folder
 		assert(Files.list(backupDir).count() == 1)
@@ -59,7 +59,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		SimpleHotswap.initLink(backupDir, targetFile, hard = false)
+		assert(SimpleHotswap.initLink(backupDir, targetFile, hard = false))
 
 		// assert the file was successfully copied to the backup folder
 		// Convert both to string instead of for easier readability in print
@@ -87,7 +87,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		SimpleHotswap.initLink(backupDir, targetFile, hard = true)
+		assert(SimpleHotswap.initLink(backupDir, targetFile, hard = true))
 
 		// assert the file was successfully copied to the backup folder
 		assert(Files.list(backupDir).count() == 1)
