@@ -10,16 +10,43 @@ import java.util.Properties
 object SimpleHotswap {
 
 	/**
+	 * Enum representing the way the versions are loaded for usage
+	 * Copy:			local instance is copied from the versions directory
+	 * Local instance can be modified without affecting its related version
+	 * Hard:			local instance refers to the loaded version using a hard link.
+	 * Only supports single file
+	 * Any changes to the local instance will be reflected in the stored instance.
+	 * Symbolic:	local instance refers to the loaded version using a symbolic link
+	 * Similar to hard link however:
+	 * Directories are supported
+	 * Some tools do not support symbolic links
+	 */
+	object LinkType extends Enumeration {
+		type LinkType = Value
+		val Copy, Hard, Symbolic = Value
+
+		/**
+		 * Resolves a string representing a LinkType to the relevant enum value
+		 *
+		 * @param s name of the LinkType to resolve
+		 * @return the relevant enum value if one exists otherwise None.
+		 */
+		def fromString(s: String): Option[Value] = values.find(_.toString == s)
+	}
+
+	import LinkType._
+
+	/**
 	 * Creates a new config file for the tool to use
 	 *
 	 * @param backupFile file that the tool should manage backups of
-	 * @param useLinks   if the backup file should be stored with the backups and replaced with a hard link
+	 * @param linkType   how the current loaded version should be linked to stored versions
 	 * @return the properties file
 	 */
-	def setupConfig(backupFile: String, useLinks: Boolean): Properties = {
+	def setupConfig(backupFile: String, linkType: LinkType): Properties = {
 		val prop = new Properties()
 		prop.setProperty("backupFile", backupFile)
-		prop.setProperty("useLinks", useLinks + "")
+		prop.setProperty("useLinks", linkType.toString)
 		prop
 	}
 

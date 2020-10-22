@@ -5,6 +5,8 @@ import java.nio.file.{Files, StandardOpenOption}
 
 import org.scalatest.funsuite.AnyFunSuite
 import richousrick.fileutilities.lib.MockUtils
+import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
+import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType.LinkType
 
 import scala.jdk.CollectionConverters._
 import scala.util.Using
@@ -12,17 +14,17 @@ import scala.util.Using
 class SimpleHotswapTest extends AnyFunSuite {
 
 	test("Setup config should create correct properties") {
-		def testParams(path: String, useLinks: Boolean) = {
+		def testParams(path: String, useLinks: LinkType) = {
 			val prop = SimpleHotswap.setupConfig(path, useLinks)
 			assert(prop.propertyNames().asScala.toSet == Set("backupFile", "useLinks"))
 			assert(prop.getProperty("backupFile") == path)
 			assert(prop.getProperty("useLinks") == useLinks + "")
 		}
 
-		testParams("""D:\some\path\to the\File\target.txt""", useLinks = false)
-		testParams("""D:\some\path\to the\File\target.txt""", useLinks = true)
-		testParams("""D:\some\path\to the\File\""", useLinks = false)
-		testParams("""D:\some\path\to the\File\""", useLinks = true)
+		testParams("""D:\some\path\to the\File\target.txt""", LinkType.Copy)
+		testParams("""D:\some\path\to the\File\target.txt""", LinkType.Hard)
+		testParams("""D:\some\path\to the\File\""", LinkType.Symbolic)
+		testParams("""D:\some\path\to the\File\""", LinkType.Copy)
 	}
 
 	test("Setup a symbolic linked backup file") {
