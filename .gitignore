@@ -1,9 +1,12 @@
-# Project exclude paths
-/project/target/
-/target/
+# Project compilation exclude paths
+project/target/
+target/
 
-#Intellij idea
+# Intellij Idea
 .idea/
 
-#sbt
+# SBT
 .bsp/
+
+# Project specific
+src/main/resources/design/
