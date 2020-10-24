@@ -16,8 +16,8 @@ class SimpleHotswapTest extends AnyFunSuite {
 	test("Setup config should create correct properties") {
 		def testParams(path: String, useLinks: LinkType) = {
 			val prop = SimpleHotswap.setupConfig(path, useLinks)
-			assert(prop.propertyNames().asScala.toSet == Set("backupFile", "useLinks"))
-			assert(prop.getProperty("backupFile") == path)
+			assert(prop.propertyNames().asScala.toSet == Set("targetFile", "useLinks"))
+			assert(prop.getProperty("targetFile") == path)
 			assert(prop.getProperty("useLinks") == useLinks + "")
 		}
 
