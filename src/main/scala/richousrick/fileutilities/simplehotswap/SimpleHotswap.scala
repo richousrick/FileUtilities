@@ -54,18 +54,22 @@ object SimpleHotswap {
 	 *
 	 * @param instanceFolder location to store the current instance
 	 * @param targetFile     file to be moved and replaced with a link
-	 * @param hard           if true the link will be hard, otherwise it will be symbolic
+	 * @param linkType       method of linking the target instance to the current version
 	 * @return true if successful
 	 */
-	def initLink(instanceFolder: Path, targetFile: Path, hard: Boolean): Boolean = {
-		if (hard && Files.isDirectory(targetFile)) {
+	def initLink(instanceFolder: Path, targetFile: Path, linkType: LinkType): Boolean = {
+		if (linkType == LinkType.Hard && Files.isDirectory(targetFile)) {
 			System.err.println(s"Hard links are unsupported for directories")
 			return false
 		}
 
 		val instance = instanceFolder.resolve("currentVersionInstance.current")
 		try {
-			Files.move(targetFile, instance)
+			if (linkType == LinkType.Copy) {
+				Files.copy(targetFile, instance)
+			} else {
+				Files.move(targetFile, instance)
+			}
 		} catch {
 			case e@(_: IOException | _: SecurityException) =>
 				System.err.println(s"Could not move current instance to backup folder ${e.getLocalizedMessage}")
@@ -73,10 +77,11 @@ object SimpleHotswap {
 		}
 
 		try {
-			if (hard)
-				Files.createLink(targetFile, instance)
-			else
-				Files.createSymbolicLink(targetFile, instance)
+			linkType match {
+				case Hard => Files.createLink(targetFile, instance)
+				case Symbolic => Files.createSymbolicLink(targetFile, instance)
+				case Copy =>
+			}
 			true
 		} catch {
 			case e@(_: IOException | _: SecurityException) =>
