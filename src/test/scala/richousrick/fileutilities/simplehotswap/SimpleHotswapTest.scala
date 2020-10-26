@@ -38,7 +38,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		assert(SimpleHotswap.initLink(backupDir, targetFile, LinkType.Symbolic))
+		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Symbolic))
 
 		// assert the file was successfully copied to the backup folder
 		assert(Files.list(backupDir).count() == 1)
@@ -61,7 +61,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		assert(SimpleHotswap.initLink(backupDir, targetFile, LinkType.Symbolic))
+		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Symbolic))
 
 		// assert the file was successfully copied to the backup folder
 		// Convert both to string instead of for easier readability in print
@@ -89,7 +89,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		assert(SimpleHotswap.initLink(backupDir, targetFile, LinkType.Hard))
+		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Hard))
 
 		// assert the file was successfully copied to the backup folder
 		assert(Files.list(backupDir).count() == 1)
@@ -114,6 +114,6 @@ class SimpleHotswapTest extends AnyFunSuite {
 		val (fs, targetFile, filesToBackup) = MockUtils.generateMockFilesystemWinDir()
 		val backupDir = fs.getPath("""C:\data\backup""")
 
-		assert(!SimpleHotswap.initLink(backupDir, targetFile, LinkType.Hard))
+		assert(!SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Hard))
 	}
 }

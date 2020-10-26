@@ -57,7 +57,7 @@ object SimpleHotswap {
 	 * @param linkType       method of linking the target instance to the current version
 	 * @return true if successful
 	 */
-	def initLink(instanceFolder: Path, targetFile: Path, linkType: LinkType): Boolean = {
+	def setupInstance(instanceFolder: Path, targetFile: Path, linkType: LinkType): Boolean = {
 		if (linkType == LinkType.Hard && Files.isDirectory(targetFile)) {
 			System.err.println(s"Hard links are unsupported for directories")
 			return false
