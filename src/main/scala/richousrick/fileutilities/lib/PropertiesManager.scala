@@ -59,3 +59,40 @@ object PropertiesManager {
 			case Success(properties) => Some(properties)
 		}
 }
+
+/**
+ * Class used to store a collection of properties that can be automatically loaded and written to the properties file.
+ */
+class PropertiesInstance {
+
+	/**
+	 * Trait to handle conversions between value and string
+	 *
+	 * @tparam T type of the properties being handled
+	 */
+	trait PropertyHandler[T] {
+
+		/**
+		 * Converts a property of type T to a string
+		 *
+		 * @param property value of parameter to convert to
+		 * @return a string representing the property
+		 */
+		protected def write(property: T): String = property.toString
+
+		/**
+		 * Attempts to convert a string to type T
+		 *
+		 * @param string to attempt to convert to type T
+		 * @return an option containing the converted type, or None if unsuccessful.
+		 */
+		protected def read(string: String): Option[T]
+	}
+
+}
+
+
+
+
+
+
