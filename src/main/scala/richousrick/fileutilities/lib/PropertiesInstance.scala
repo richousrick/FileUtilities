@@ -3,9 +3,9 @@ package richousrick.fileutilities.lib
 import scala.reflect.runtime.universe._
 
 /**
- * Class used to store a collection of properties that can be automatically loaded and written to the properties file.
+ * Companion object for [[richousrick.fileutilities.lib.PropertiesInstance]].
  */
-class PropertiesInstance {
+object PropertiesInstance {
 
 	/**
 	 * Converts a property of type T to a string
@@ -28,4 +28,10 @@ class PropertiesInstance {
 			.asInstanceOf[T]
 			.values
 			.find(_.toString == value)
+}
+
+/**
+ * Class used to store a collection of properties that can be automatically loaded and written to the properties file.
+ */
+class PropertiesInstance {
 }
