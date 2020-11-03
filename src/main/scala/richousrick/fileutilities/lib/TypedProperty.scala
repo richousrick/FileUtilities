@@ -1,5 +1,7 @@
 package richousrick.fileutilities.lib
 
+import java.util.Properties
+
 import scala.reflect.runtime.universe._
 
 
@@ -26,12 +28,36 @@ sealed abstract class TypedProperty[T] {
 	def load(value: String): Option[T]
 
 	/**
+	 * Attempts to load a property with the given name as an instance of type T
+	 *
+	 * @param name       of the property to load
+	 * @param properties collection of properties to load the desired value from from
+	 * @return the desired value if it exists in the properties object and can be parsed. None otherwise.
+	 */
+	def loadProperty(name: String, properties: Properties): Option[T] =
+		properties.getProperty(name) match {
+			case p if p != null && p.nonEmpty && p.head == prefix => load(p.drop(1))
+			case _ => None
+		}
+
+	/**
 	 * Converts the given value to a string representation
 	 *
 	 * @param value instance of an object to convert to a string
 	 * @return a string representing the given value
 	 */
 	def write(value: T): String = value.toString
+
+
+	/**
+	 * Writes the target value to the properties file.
+	 *
+	 * @param name       to store the property as
+	 * @param value      of the property to write
+	 * @param properties file to write the property to
+	 */
+	def writeProperty(name: String, value: T, properties: Properties): Unit =
+		properties.setProperty(name, prefix + write(value))
 }
 
 
