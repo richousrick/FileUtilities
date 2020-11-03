@@ -6,9 +6,9 @@ import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
 import scala.math.BigDecimal.RoundingMode
 import scala.util.Random
 
-class PropertiesInstanceTest extends AnyFunSuite {
+class TypedPropertyTest extends AnyFunSuite {
 
-	test("Load works properly") {
+	test("Load works for Enums") {
 		assert(EnumProperty[LinkType.type].load("Copy").contains(LinkType.Copy))
 		assert(EnumProperty[LinkType.type].load("Hard").contains(LinkType.Hard))
 		assert(EnumProperty[LinkType.type].load("Symbolic").contains(LinkType.Symbolic))
