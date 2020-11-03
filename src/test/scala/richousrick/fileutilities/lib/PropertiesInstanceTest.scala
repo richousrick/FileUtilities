@@ -4,73 +4,82 @@ import org.scalatest.funsuite.AnyFunSuite
 import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
 
 import scala.math.BigDecimal.RoundingMode
+import scala.util.Random
 
 class PropertiesInstanceTest extends AnyFunSuite {
 
-	test("ReadEnum works properly") {
-		assert(PropertiesInstance.readEnum[LinkType.type]("Copy").contains(LinkType.Copy))
-		assert(PropertiesInstance.readEnum[LinkType.type]("Hard").contains(LinkType.Hard))
-		assert(PropertiesInstance.readEnum[LinkType.type]("Symbolic").contains(LinkType.Symbolic))
-		assert(PropertiesInstance.readEnum[LinkType.type]("Yolo").isEmpty)
-		assert(PropertiesInstance.readEnum[RoundingMode.type]("CEILING").contains(RoundingMode.CEILING))
+	test("Load works properly") {
+		assert(EnumProperty[LinkType.type].load("Copy").contains(LinkType.Copy))
+		assert(EnumProperty[LinkType.type].load("Hard").contains(LinkType.Hard))
+		assert(EnumProperty[LinkType.type].load("Symbolic").contains(LinkType.Symbolic))
+		assert(EnumProperty[LinkType.type].load("Yolo").isEmpty)
+		assert(EnumProperty[RoundingMode.type].load("CEILING").contains(RoundingMode.CEILING))
 	}
 
-	test("ReadVal works for Booleans") {
-		assert(PropertiesInstance.readVal[Boolean]("true").contains(true))
-		assert(PropertiesInstance.readVal[Boolean]("false").contains(false))
-		assert(PropertiesInstance.readVal[Boolean]("Hello").isEmpty)
+	test("Load works for Booleans") {
+		assert(BooleanProperty.load("true").contains(true))
+		assert(BooleanProperty.load("false").contains(false))
+		assert(BooleanProperty.load("Hello").isEmpty)
 	}
 
-	test("ReadVal works for Bytes") {
-		assert(PropertiesInstance.readVal[Byte]("0").contains(0.toByte))
-		assert(PropertiesInstance.readVal[Byte]("120").contains(120.toByte))
-		assert(PropertiesInstance.readVal[Byte]("512").isEmpty)
-		assert(PropertiesInstance.readVal[Byte]("how").isEmpty)
+	test("Load works for Bytes") {
+		assert(ByteProperty.load("0").contains(0.toByte))
+		assert(ByteProperty.load("120").contains(120.toByte))
+		assert(ByteProperty.load("512").isEmpty)
+		assert(ByteProperty.load("how").isEmpty)
 	}
 
-	test("ReadVal works for Shorts") {
-		assert(PropertiesInstance.readVal[Short]("0").contains(0.toShort))
-		assert(PropertiesInstance.readVal[Short](Short.MinValue.toString).contains(Short.MinValue))
-		assert(PropertiesInstance.readVal[Short](Short.MaxValue.toString).contains(Short.MaxValue))
-		assert(PropertiesInstance.readVal[Short](Int.MaxValue.toString).isEmpty)
-		assert(PropertiesInstance.readVal[Short]("are").isEmpty)
+	test("Load works for Shorts") {
+		assert(ShortProperty.load("0").contains(0.toShort))
+		assert(ShortProperty.load(Short.MinValue.toString).contains(Short.MinValue))
+		assert(ShortProperty.load(Short.MaxValue.toString).contains(Short.MaxValue))
+		assert(ShortProperty.load(Int.MaxValue.toString).isEmpty)
+		assert(ShortProperty.load("are").isEmpty)
 	}
 
-	test("ReadVal works for Ints") {
-		assert(PropertiesInstance.readVal[Int]("0").contains(0.toInt))
-		assert(PropertiesInstance.readVal[Int](Int.MinValue.toString).contains(Int.MinValue))
-		assert(PropertiesInstance.readVal[Int](Int.MaxValue.toString).contains(Int.MaxValue))
-		assert(PropertiesInstance.readVal[Int](Long.MaxValue.toString).isEmpty)
-		assert(PropertiesInstance.readVal[Int]("you").isEmpty)
+	test("Load works for Ints") {
+		assert(IntProperty.load("0").contains(0.toInt))
+		assert(IntProperty.load(Int.MinValue.toString).contains(Int.MinValue))
+		assert(IntProperty.load(Int.MaxValue.toString).contains(Int.MaxValue))
+		assert(IntProperty.load(Long.MaxValue.toString).isEmpty)
+		assert(IntProperty.load("you").isEmpty)
 	}
 
-	test("ReadVal works for Longs") {
-		assert(PropertiesInstance.readVal[Long]("0").contains(0.toLong))
-		assert(PropertiesInstance.readVal[Long](Long.MinValue.toString).contains(Long.MinValue))
-		assert(PropertiesInstance.readVal[Long](Long.MaxValue.toString).contains(Long.MaxValue))
-		assert(PropertiesInstance.readVal[Long]("1" + Long.MaxValue).isEmpty)
-		assert(PropertiesInstance.readVal[Long]("doing").isEmpty)
+	test("Load works for Longs") {
+		assert(LongProperty.load("0").contains(0.toLong))
+		assert(LongProperty.load(Long.MinValue.toString).contains(Long.MinValue))
+		assert(LongProperty.load(Long.MaxValue.toString).contains(Long.MaxValue))
+		assert(LongProperty.load("1" + Long.MaxValue).isEmpty)
+		assert(LongProperty.load("doing").isEmpty)
 	}
 
-	test("ReadVal works for Floats") {
-		assert(PropertiesInstance.readVal[Float]("0").contains(0.toFloat))
-		assert(PropertiesInstance.readVal[Float](Float.MinValue.toString).contains(Float.MinValue))
-		assert(PropertiesInstance.readVal[Float](Float.MaxValue.toString).contains(Float.MaxValue))
-		assert(PropertiesInstance.readVal[Float]("1" + Float.MaxValue).contains(Float.PositiveInfinity))
-		assert(PropertiesInstance.readVal[Float]("today").isEmpty)
+	test("Load works for Floats") {
+		assert(FloatProperty.load("0").contains(0.toFloat))
+		assert(FloatProperty.load(Float.MinValue.toString).contains(Float.MinValue))
+		assert(FloatProperty.load(Float.MaxValue.toString).contains(Float.MaxValue))
+		assert(FloatProperty.load("1" + Float.MaxValue).contains(Float.PositiveInfinity))
+		assert(FloatProperty.load("today").isEmpty)
 	}
 
-	test("ReadVal works for Doubles") {
-		assert(PropertiesInstance.readVal[Double]("0").contains(0.toDouble))
-		assert(PropertiesInstance.readVal[Double](Double.MinValue.toString).contains(Double.MinValue))
-		assert(PropertiesInstance.readVal[Double](Double.MaxValue.toString).contains(Double.MaxValue))
-		assert(PropertiesInstance.readVal[Double]("1" + Double.MaxValue).contains(Double.PositiveInfinity))
-		assert(PropertiesInstance.readVal[Double]("well").isEmpty)
+	test("Load works for Doubles") {
+		assert(DoubleProperty.load("0").contains(0.toDouble))
+		assert(DoubleProperty.load(Double.MinValue.toString).contains(Double.MinValue))
+		assert(DoubleProperty.load(Double.MaxValue.toString).contains(Double.MaxValue))
+		assert(DoubleProperty.load("1" + Double.MaxValue).contains(Double.PositiveInfinity))
+		assert(DoubleProperty.load("well").isEmpty)
 	}
 
-	test("ReadVal works for Chars") {
-		assert(PropertiesInstance.readVal[Char]("i").contains('i'))
-		assert(PropertiesInstance.readVal[Char]("hope").isEmpty)
-		assert(PropertiesInstance.readVal[Char]("!").contains('!'))
+	test("Load works for Chars") {
+		assert(CharProperty.load("i").contains('i'))
+		assert(CharProperty.load("hope").isEmpty)
+		assert(CharProperty.load("!").contains('!'))
+	}
+
+	test("Load works for Strings") {
+		Random.setSeed(2)
+		val str = Random.nextString(1024 * 512)
+		assert(StringProperty.load(str).contains(str))
+
+		assert(StringProperty.load("").contains(""))
 	}
 }
