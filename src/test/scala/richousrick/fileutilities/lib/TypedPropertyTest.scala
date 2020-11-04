@@ -180,7 +180,9 @@ class TypedPropertyReadWriteTest extends AnyFunSuite {
 	 * @tparam T base type of the value being written
 	 */
 	def readWriteTest[T](tp: TypedProperty[T], name: String, value: T): Unit = {
+		assert(!tp.hasThisType(tp.prefix + name, properties))
 		tp.writeProperty(tp.prefix + name, value, properties)
+		assert(tp.hasThisType(tp.prefix + name, properties))
 		assert(tp.loadProperty(tp.prefix + name, properties).contains(value))
 	}
 }

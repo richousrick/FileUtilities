@@ -35,9 +35,9 @@ sealed abstract class TypedProperty[T] {
 	 * @return the desired value if it exists in the properties object and can be parsed. None otherwise.
 	 */
 	def loadProperty(name: String, properties: Properties): Option[T] =
-		properties.getProperty(name) match {
-			case p if p != null && p.nonEmpty && p.head == prefix => load(p.drop(1))
-			case _ => None
+		getThisType(name, properties) match {
+			case Some(v) => load(v.drop(1))
+			case None => None
 		}
 
 	/**
@@ -58,6 +58,30 @@ sealed abstract class TypedProperty[T] {
 	 */
 	def writeProperty(name: String, value: T, properties: Properties): Unit =
 		properties.setProperty(name, prefix + write(value))
+
+
+	/**
+	 * Tests if a property with the specified name exists as an instance of this type
+	 *
+	 * @param name       name of the property to test existence of
+	 * @param properties to test contain the desired property
+	 * @return true if a property with the specified name matching type T exists in properties; false otherwise.
+	 */
+	def hasThisType(name: String, properties: Properties): Boolean =
+		getThisType(name, properties).isDefined
+
+	/**
+	 * Attempts to get the value of the property with the given name; if it is of type T.
+	 *
+	 * @param name       of the property to get
+	 * @param properties collection of properties to search
+	 * @return the value mapped to the property with the desired name, if it is of type T. None otherwise.
+	 */
+	private def getThisType(name: String, properties: Properties): Option[String] =
+		properties.getProperty(name) match {
+			case p if p != null && p.nonEmpty && p.head == prefix => Some(p)
+			case _ => None
+		}
 }
 
 
