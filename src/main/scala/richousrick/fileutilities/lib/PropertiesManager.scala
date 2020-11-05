@@ -43,12 +43,11 @@ object PropertiesManager {
 	 * @param configFile to read the properties file from
 	 * @return Some(properties) if successful otherwise None
 	 */
-	def readConfig(configFile: Path): Option[Properties] =
+	def readConfig(configFile: Path, prop: Properties = new Properties()): Option[Properties] =
 		Using.Manager { use =>
 			val channel = use(FileChannel.open(configFile, StandardOpenOption.READ))
 			use(channel.lock(0L, Long.MaxValue, true))
 			val in = use(Channels.newInputStream(channel))
-			val prop = new Properties()
 			prop.load(in)
 			prop
 		} match {

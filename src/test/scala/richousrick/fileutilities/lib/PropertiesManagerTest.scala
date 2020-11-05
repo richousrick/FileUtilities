@@ -57,4 +57,26 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 	test("Try to load config from non existent file") {
 		assert(PropertiesManager.readConfig(propLoc).isEmpty)
 	}
+
+	test("Loading config into existing properties instance") {
+		// write properties to disk
+		assert(PropertiesManager.writeConfig(propLoc, prop))
+
+		// create new properties file with properties
+		val newProp = new Properties()
+		newProp.setProperty("otherProperty", "SomeValue")
+		newProp.setProperty("dolor", "stand")
+		assert(newProp.getProperty("otherProperty") == "SomeValue")
+		assert(newProp.getProperty("dolor") == "stand")
+
+		// load properties and test old properties exist
+		assert(PropertiesManager.readConfig(propLoc, newProp).isDefined)
+		// test property not deleted
+		assert(newProp.getProperty("otherProperty") == "SomeValue")
+		// test property overwritten on load
+
+		assert(newProp.getProperty("dolor") == "sit ")
+		// test non existant property was loaded
+		assert(newProp.getProperty("Lorem") == "Ipsum")
+	}
 }
