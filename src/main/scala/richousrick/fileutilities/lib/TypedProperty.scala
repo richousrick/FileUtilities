@@ -61,7 +61,8 @@ sealed abstract class TypedProperty[T] {
 
 
 	/**
-	 * Tests if a property with the specified name exists as an instance of this type
+	 * Tests if a property with the specified name exists as an instance of this type.
+	 * TODO: Fix potential problems arising from loading the wrong enum.
 	 *
 	 * @param name       name of the property to test existence of
 	 * @param properties to test contain the desired property

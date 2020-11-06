@@ -167,6 +167,7 @@ class TypedPropertyReadWriteTest extends AnyFunSuite {
 
 		EnumProperty[LinkType.type].writeProperty("Copy Type", LinkType.Copy, properties)
 		assert(StringProperty.loadProperty("Copy Type", properties).isEmpty)
+		assert(EnumProperty[RoundingMode.type].loadProperty("Copy Type", properties).isEmpty)
 		assert(EnumProperty[LinkType.type].loadProperty("Copy Type", properties).contains(LinkType.Copy))
 	}
 
