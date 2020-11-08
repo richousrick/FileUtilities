@@ -1,5 +1,6 @@
 package richousrick.fileutilities.lib
 
+import java.io.IOException
 import java.nio.channels.{Channels, FileChannel}
 import java.nio.file.{Files, Path, StandardOpenOption}
 import java.util.Properties
@@ -18,9 +19,22 @@ object PropertiesManager {
 	 * @param prop       properties to write
 	 * @return true if the properties were successfully written
 	 */
-	def writeConfig(configFile: Path, prop: Properties): Boolean =
-		Using.Manager { use =>
+	def writeConfigSwallow(configFile: Path, prop: Properties): Boolean =
+		try {
+			writeConfig(configFile, prop)
+			true
+		} catch {
+			case e: IOException => System.err.println(s"Could not create config file: $e"); false
+		}
 
+	/**
+	 * Writes the properties to the specified config file
+	 *
+	 * @param configFile file to write the configuration to
+	 * @param prop       properties to write
+	 */
+	def writeConfig(configFile: Path, prop: Properties): Unit =
+		Using.Manager { use =>
 			// create parent dir if missing
 			Files.createDirectories(configFile.getParent)
 
@@ -30,11 +44,8 @@ object PropertiesManager {
 
 			prop.store(out, null)
 		} match {
-			case Failure(exception) =>
-				System.err.println(s"Could not create config file: $exception")
-				false
-
-			case Success(_) => true
+			case Failure(exception) => throw exception
+			case Success(_) =>
 		}
 
 	/**
@@ -43,7 +54,20 @@ object PropertiesManager {
 	 * @param configFile to read the properties file from
 	 * @return Some(properties) if successful otherwise None
 	 */
-	def readConfig(configFile: Path, prop: Properties = new Properties()): Option[Properties] =
+	def readConfigSwallow(configFile: Path, prop: Properties = new Properties()): Option[Properties] =
+		try {
+			Some(readConfig(configFile, prop))
+		} catch {
+			case e: IOException => System.err.println(s"Could not read config file: $e"); None
+		}
+
+	/**
+	 * Reads properties from a config file
+	 *
+	 * @param configFile to read the properties file from
+	 * @return the loaded properties
+	 */
+	def readConfig(configFile: Path, prop: Properties = new Properties()): Properties =
 		Using.Manager { use =>
 			val channel = use(FileChannel.open(configFile, StandardOpenOption.READ))
 			use(channel.lock(0L, Long.MaxValue, true))
@@ -51,11 +75,8 @@ object PropertiesManager {
 			prop.load(in)
 			prop
 		} match {
-			case Failure(exception) =>
-				System.err.println(s"Could not read config file: $exception")
-				None
-
-			case Success(properties) => Some(properties)
+			case Failure(exception) => throw exception
+			case Success(properties) => properties
 		}
 }
 
