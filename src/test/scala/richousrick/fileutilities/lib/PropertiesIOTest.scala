@@ -6,7 +6,7 @@ import java.util.Properties
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
 
-class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
+class PropertiesIOTest extends AnyFunSuite with BeforeAndAfterEach {
 	var targetFile: Path = _
 	var backupDir: Path = _
 	var propLoc: Path = _
@@ -30,37 +30,37 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 	}
 
 	test("Create and read new config file") {
-		assert(PropertiesManager.writeConfigSwallow(propLoc, prop))
+		assert(PropertiesIO.writeConfigSwallow(propLoc, prop))
 
 		// test the config file was created, and when loaded is identical to the
 		assert(Files.exists(propLoc))
-		val loadedProps = PropertiesManager.readConfigSwallow(propLoc)
+		val loadedProps = PropertiesIO.readConfigSwallow(propLoc)
 		assert(loadedProps.isDefined)
 		assert(loadedProps.get == prop)
 	}
 
 	test("Overwrite and read config file") {
-		assert(PropertiesManager.writeConfigSwallow(propLoc, prop))
+		assert(PropertiesIO.writeConfigSwallow(propLoc, prop))
 
 		// assert current props match stored props
-		assert(PropertiesManager.readConfigSwallow(propLoc).get == prop)
+		assert(PropertiesIO.readConfigSwallow(propLoc).get == prop)
 
 		// change property and verify differs from stored props
 		prop.setProperty("otherProperty", "SomeValue")
-		assert(PropertiesManager.readConfigSwallow(propLoc).get != prop)
+		assert(PropertiesIO.readConfigSwallow(propLoc).get != prop)
 
 		// rewrite and verify they match again
-		PropertiesManager.writeConfigSwallow(propLoc, prop)
-		assert(PropertiesManager.readConfigSwallow(propLoc).get == prop)
+		PropertiesIO.writeConfigSwallow(propLoc, prop)
+		assert(PropertiesIO.readConfigSwallow(propLoc).get == prop)
 	}
 
 	test("Try to load config from non existent file") {
-		assert(PropertiesManager.readConfigSwallow(propLoc).isEmpty)
+		assert(PropertiesIO.readConfigSwallow(propLoc).isEmpty)
 	}
 
 	test("Loading config into existing properties instance") {
 		// write properties to disk
-		assert(PropertiesManager.writeConfigSwallow(propLoc, prop))
+		assert(PropertiesIO.writeConfigSwallow(propLoc, prop))
 
 		// create new properties file with properties
 		val newProp = new Properties()
@@ -70,7 +70,7 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 		assert(newProp.getProperty("dolor") == "stand")
 
 		// load properties and test old properties exist
-		assert(PropertiesManager.readConfigSwallow(propLoc, newProp).isDefined)
+		assert(PropertiesIO.readConfigSwallow(propLoc, newProp).isDefined)
 		// test property not deleted
 		assert(newProp.getProperty("otherProperty") == "SomeValue")
 		// test property overwritten on load
@@ -81,6 +81,6 @@ class PropertiesManagerTest extends AnyFunSuite with BeforeAndAfterEach {
 	}
 
 	test("Read config throws exception on missing file") {
-		assertThrows[NoSuchFileException](PropertiesManager.readConfig(propLoc.resolve("missingDIr"), prop))
+		assertThrows[NoSuchFileException](PropertiesIO.readConfig(propLoc.resolve("missingDIr"), prop))
 	}
 }

@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Using}
 /**
  * Library enabling simple properties IO
  */
-object PropertiesManager {
+object PropertiesIO {
 
 	/**
 	 * Writes the properties to the specified config file
