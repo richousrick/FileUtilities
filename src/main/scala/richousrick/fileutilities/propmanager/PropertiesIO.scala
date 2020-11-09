@@ -1,4 +1,4 @@
-package richousrick.fileutilities.lib
+package richousrick.fileutilities.propmanager
 
 import java.io.IOException
 import java.nio.channels.{Channels, FileChannel}

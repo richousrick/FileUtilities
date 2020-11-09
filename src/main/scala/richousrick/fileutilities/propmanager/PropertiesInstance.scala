@@ -1,18 +1,18 @@
-package richousrick.fileutilities.lib
+package richousrick.fileutilities.propmanager
 
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 /**
- * Companion object for [[richousrick.fileutilities.lib.PropertiesInstance]].
+ * Companion object for [[richousrick.fileutilities.propmanager.PropertiesInstance]].
  */
 object PropertiesInstance {
 
 	/**
-	 * Gets an instance of [[richousrick.fileutilities.lib.TypedProperty TypedProperty]] that can handle a desired datatype.
+	 * Gets an instance of [[richousrick.fileutilities.propmanager.TypedProperty TypedProperty]] that can handle a desired datatype.
 	 *
 	 * @param tt type tag of the desired datatype
 	 * @tparam T desired datatype
-	 * @return a [[richousrick.fileutilities.lib.TypedProperty TypedProperty]] that can handle data T, or None if T is an unsupported datatype
+	 * @return a [[richousrick.fileutilities.propmanager.TypedProperty TypedProperty]] that can handle data T, or None if T is an unsupported datatype
 	 */
 	private def resolveHandler[T](implicit tt: TypeTag[T]): Option[TypedProperty[T]] = (tt.tpe match {
 		case e if e <:< typeOf[Enumeration] =>

@@ -1,10 +1,11 @@
-package richousrick.fileutilities.lib
+package richousrick.fileutilities.propmanager
 
 import java.nio.file.{FileSystem, Files, NoSuchFileException, Path}
 import java.util.Properties
 
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
+import richousrick.fileutilities.lib.MockUtils
 
 class PropertiesIOTest extends AnyFunSuite with BeforeAndAfterEach {
 	var targetFile: Path = _
