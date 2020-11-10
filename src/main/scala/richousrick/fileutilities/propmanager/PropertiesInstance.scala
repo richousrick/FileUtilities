@@ -1,5 +1,8 @@
 package richousrick.fileutilities.propmanager
 
+import java.nio.file.Path
+import java.util.Properties
+
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 /**
@@ -37,10 +40,26 @@ object PropertiesInstance {
 		case null => None
 		case tp => Some(tp.asInstanceOf[TypedProperty[T]])
 	}
+
+	def apply(): PropertiesInstance = new PropertiesInstance(new Properties())
 }
 
 /**
  * Class used to store a collection of properties that can be automatically loaded and written to the properties file.
  */
-class PropertiesInstance {
+class PropertiesInstance(private val properties: Properties) {
+
+	/**
+	 * Loads an instance from a file
+	 *
+	 * @param path path to the file the properties should be read from
+	 */
+	def load(path: Path): Unit = PropertiesIO.readConfigSwallow(path, properties)
+
+	/**
+	 * Writes the instance to a file
+	 *
+	 * @param path path to the file the properties should be written to
+	 */
+	def write(path: Path): Unit = PropertiesIO.writeConfigSwallow(path, properties)
 }
