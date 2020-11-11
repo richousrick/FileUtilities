@@ -18,14 +18,9 @@ object PropertiesInstance {
 	 * @return a [[richousrick.fileutilities.propmanager.TypedProperty TypedProperty]] that can handle data T, or None if T is an unsupported datatype
 	 */
 	private def resolveHandler[T](implicit tt: TypeTag[T]): Option[TypedProperty[T]] = (tt.tpe match {
-		case e if e <:< typeOf[Enumeration] =>
-			// Get base class and cast to a subclass of Enumeration.
-			// Then pass that class to a function that will build an instance
-			// Note: 	Type checking fails when extracting the type from the class
-			// 				So a function is used that extracts the type from the class and uses that
-			def makeInstance[E <: Enumeration : TypeTag](c: Class[E]): EnumProperty[E] = EnumProperty[E]
-
-			makeInstance(tt.mirror.runtimeClass(tt.tpe).asSubclass[Enumeration](classOf[Enumeration]))
+		case e if e <:< typeOf[Enumeration] => EnumProperty.makeInstance(tt.mirror
+			.runtimeClass(tt.tpe)
+			.asSubclass[Enumeration](classOf[Enumeration]))
 		case s if s =:= typeOf[String] => StringProperty
 		case c if c =:= typeOf[Char] => CharProperty
 		case b if b =:= typeOf[Boolean] => BooleanProperty

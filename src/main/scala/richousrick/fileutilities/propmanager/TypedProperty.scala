@@ -2,7 +2,8 @@ package richousrick.fileutilities.propmanager
 
 import java.util.Properties
 
-import scala.reflect.runtime.universe.{TypeTag, runtimeMirror, typeOf}
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.runtimeMirror
 
 
 /**
@@ -87,7 +88,12 @@ sealed abstract class TypedProperty[T] {
 
 
 object EnumProperty {
-	def apply[E <: Enumeration : TypeTag]: EnumProperty[E] = new EnumProperty[E]()
+	def apply[E <: Enumeration : ClassTag]: EnumProperty[E] = new EnumProperty[E]()
+
+	def makeInstance[E <: Enumeration](clazz: Class[E]): EnumProperty[E] = {
+		implicit val ct: ClassTag[E] = ClassTag(clazz)
+		new EnumProperty[E]()
+	}
 }
 
 /**
@@ -95,7 +101,7 @@ object EnumProperty {
  *
  * @tparam E reference to the Enumeration type the class should handle
  */
-class EnumProperty[E <: Enumeration : TypeTag] extends TypedProperty[E#Value] {
+class EnumProperty[E <: Enumeration](implicit ct: ClassTag[E]) extends TypedProperty[E#Value] {
 
 	override def prefix: Char = 'e'
 
@@ -105,12 +111,14 @@ class EnumProperty[E <: Enumeration : TypeTag] extends TypedProperty[E#Value] {
 	 * @param value name of the value to read.
 	 * @return The value of the enum with the specified name. If one exists
 	 */
-	override def load(value: String): Option[E#Value] =
-		runtimeMirror(getClass.getClassLoader).reflectModule(typeOf[E].termSymbol.asModule)
+	override def load(value: String): Option[E#Value] = {
+		val mirror = runtimeMirror(getClass.getClassLoader)
+		mirror.reflectModule(mirror.staticModule(ct.runtimeClass.getName.dropRight(1).replaceAll("\\$", ".")))
 			.instance
 			.asInstanceOf[E]
 			.values
 			.find(_.toString == value)
+	}
 }
 
 
