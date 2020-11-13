@@ -3,7 +3,7 @@ package richousrick.fileutilities.propmanager
 import java.nio.file.Path
 import java.util.Properties
 
-import scala.reflect.runtime.universe.{TypeTag, typeOf}
+import scala.reflect.runtime.universe.{TypeRef, TypeTag, typeOf}
 
 /**
  * Companion object for [[richousrick.fileutilities.propmanager.PropertiesInstance]].
@@ -21,6 +21,10 @@ object PropertiesInstance {
 		case e if e <:< typeOf[Enumeration] => EnumProperty.makeInstance(tt.mirror
 			.runtimeClass(tt.tpe)
 			.asSubclass[Enumeration](classOf[Enumeration]))
+		case v if v <:< typeOf[Enumeration#Value] =>
+			EnumProperty.makeInstance(tt.mirror
+				.runtimeClass(typeOf[T].widen.asInstanceOf[TypeRef].pre.typeSymbol.asClass)
+				.asSubclass[Enumeration](classOf[Enumeration]))
 		case s if s =:= typeOf[String] => StringProperty
 		case c if c =:= typeOf[Char] => CharProperty
 		case b if b =:= typeOf[Boolean] => BooleanProperty

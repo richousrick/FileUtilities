@@ -27,6 +27,16 @@ class PropertiesInstanceResolverTest extends AnyFunSuite with PrivateMethodTeste
 		tryTest[Double](DoubleProperty)
 	}
 
+	test("resolverHandler resolves enums from values") {
+		val rm = resolveHandler[RoundingMode.CEILING.type]
+		assert(rm.isDefined)
+		assert(rm.get.isInstanceOf[EnumProperty[RoundingMode.type]])
+
+		val lt = resolveHandler[LinkType.Copy.type]
+		assert(lt.isDefined)
+		assert(lt.get.isInstanceOf[EnumProperty[LinkType.type]])
+	}
+
 	test("resolverHandler resolves enum types") {
 		val rm = resolveHandler[RoundingMode.type]
 		assert(rm.isDefined)
