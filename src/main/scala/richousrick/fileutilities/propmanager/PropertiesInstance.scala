@@ -61,4 +61,39 @@ class PropertiesInstance(private val properties: Properties) {
 	 * @param path path to the file the properties should be written to
 	 */
 	def write(path: Path): Unit = PropertiesIO.writeConfigSwallow(path, properties)
+
+	/**
+	 * Attempts to add the specified key value pair to the properties list.
+	 *
+	 * @param name  name of the property to store
+	 * @param value value of the property
+	 * @param tt    TypeTag of type T
+	 * @tparam T type of the property being stored
+	 * @return true if the property was successfully stored
+	 */
+	def setProperty[T](name: String, value: T)(implicit tt: TypeTag[T]): Boolean = PropertiesInstance
+		.resolveHandler[T] match {
+		case Some(handler) =>
+			handler.writeProperty(name, value, properties)
+			true
+
+		case None => false
+	}
+
+	/**
+	 * Attempts to read a property from the properties list
+	 *
+	 * @param name name of the property to read
+	 * @param tt   TypeTag of type T
+	 * @tparam T type of the property being loaded
+	 * @return the value if it was loaded successfully; None otherwise
+	 */
+	def getProperty[T](name: String)(implicit tt: TypeTag[T]): Option[T] = {
+		val handler = PropertiesInstance.resolveHandler[T]
+
+		handler match {
+			case Some(handler) => handler.loadProperty(name, properties)
+			case None => None
+		}
+	}
 }
