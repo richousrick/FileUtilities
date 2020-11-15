@@ -87,7 +87,7 @@ class TypedPropertyTest extends AnyFunSuite {
 	}
 }
 
-class TypedPropertyReadWriteTest extends AnyFunSuite {
+class TypedPropertyReadWriteTypedTest extends AnyFunSuite {
 	val properties = new Properties()
 
 
@@ -96,6 +96,9 @@ class TypedPropertyReadWriteTest extends AnyFunSuite {
 		readWriteTest(EnumProperty[LinkType.type], "h", LinkType.Hard)
 		readWriteTest(EnumProperty[LinkType.type], "s", LinkType.Symbolic)
 		readWriteTest(EnumProperty[RoundingMode.type], "r", RoundingMode.CEILING)
+
+		// assert no problem with trying to load accross types
+		assert(EnumProperty[RoundingMode.type].loadProperty("c", properties, typed = false).isEmpty)
 	}
 
 	test("Boolean Read/Write") {
@@ -188,6 +191,124 @@ class TypedPropertyReadWriteTest extends AnyFunSuite {
 	}
 }
 
+class TypedPropertyReadWriteUntypedTest extends AnyFunSuite {
+	val properties = new Properties()
+	Random.setSeed(7)
+
+
+	test("Enum Read/Write") {
+		readWriteTest(EnumProperty[LinkType.type], "c", LinkType.Copy)
+		readWriteTest(EnumProperty[LinkType.type], "h", LinkType.Hard)
+		readWriteTest(EnumProperty[LinkType.type], "s", LinkType.Symbolic)
+		readWriteTest(EnumProperty[RoundingMode.type], "r", RoundingMode.CEILING)
+
+		// assert no problem with trying to load accross types
+		assert(EnumProperty[RoundingMode.type].loadProperty("c", properties, typed = false).isEmpty)
+	}
+
+	test("Boolean Read/Write") {
+		readWriteTest(BooleanProperty, "t", true)
+		readWriteTest(BooleanProperty, "f", false)
+	}
+
+	test("Byte Read/Write") {
+		readWriteTest(ByteProperty, "zero", 0.toByte, usePrefix = false)
+
+		readWriteTest(ByteProperty, "pos", 120.toByte)
+		readWriteTest(ByteProperty, "neg", -120.toByte)
+	}
+
+	test("Short Read/Write") {
+		assert(ShortProperty.loadProperty("zero", properties, typed = false).contains(0.toShort))
+
+		readWriteTest(ShortProperty, "pos", Short.MaxValue)
+		readWriteTest(ShortProperty, "neg", Short.MinValue)
+	}
+
+	test("Int Read/Write") {
+		assert(IntProperty.loadProperty("zero", properties, typed = false).contains(0))
+		readWriteTest(IntProperty, "pos", Int.MaxValue)
+		readWriteTest(IntProperty, "neg", Int.MinValue)
+	}
+
+	test("Long Read/Write") {
+		assert(LongProperty.loadProperty("zero", properties, typed = false).contains(0L))
+		readWriteTest(LongProperty, "pos", Long.MaxValue)
+		readWriteTest(LongProperty, "neg", Long.MinValue)
+	}
+
+	test("Float Read/Write") {
+		assert(FloatProperty.loadProperty("zero", properties, typed = false).contains(0f))
+		readWriteTest(FloatProperty, "pos", Float.MaxValue)
+		readWriteTest(FloatProperty, "neg", Float.MinValue)
+		readWriteTest(FloatProperty, "pinf", Float.PositiveInfinity)
+		readWriteTest(FloatProperty, "ninf", Float.NegativeInfinity)
+	}
+
+	test("Double Read/Write") {
+		assert(DoubleProperty.loadProperty("zero", properties, typed = false).contains(0d))
+		readWriteTest(DoubleProperty, "pos", Double.MaxValue)
+		readWriteTest(DoubleProperty, "neg", Double.MinValue)
+		readWriteTest(DoubleProperty, "pinf", Double.PositiveInfinity)
+		readWriteTest(DoubleProperty, "ninf", Double.NegativeInfinity)
+	}
+
+	test("Char Read/Write") {
+		readWriteTest(CharProperty, "i", 'i')
+		readWriteTest(CharProperty, "!", '!')
+		readWriteTest(CharProperty, "tab", '\t')
+	}
+
+	test("String Read/Write") {
+		Random.setSeed(3)
+		readWriteTest(StringProperty, "generated", Random.nextString(1024 * 512))
+		readWriteTest(StringProperty, "empty", "")
+	}
+
+	test("Wrong type test") {
+		IntProperty.writeProperty("nought", 0, properties)
+		assert(properties.getProperty("nought") == "i0")
+		assert(ByteProperty.loadProperty("nought", properties).isEmpty)
+		assert(IntProperty.loadProperty("nought", properties).contains(0))
+
+		LongProperty.writeProperty("BigLong", Long.MaxValue, properties)
+		assert(IntProperty.loadProperty("BigLong", properties).isEmpty)
+		assert(LongProperty.loadProperty("BigLong", properties).contains(Long.MaxValue))
+
+		EnumProperty[LinkType.type].writeProperty("Copy Type", LinkType.Copy, properties)
+		assert(StringProperty.loadProperty("Copy Type", properties).isEmpty)
+		assert(EnumProperty[RoundingMode.type].loadProperty("Copy Type", properties).isEmpty)
+		assert(EnumProperty[LinkType.type].loadProperty("Copy Type", properties).contains(LinkType.Copy))
+	}
+
+	/**
+	 * Writes the given value to the properties file, prefixing the name.
+	 * Then reads the value back and tests if it is equal to the initial value
+	 *
+	 * @param tp    TypedProperty instance to read/write the property.
+	 * @param name  unprefixed name to write the value as
+	 * @param value to write / read to the properties file
+	 * @tparam T base type of the value being written
+	 */
+	def readWriteTest[T](tp: TypedProperty[T], name: String, value: T, usePrefix: Boolean = true): Unit = {
+		val nameI = (if (usePrefix) Random.nextString(10) else "") + name
+
+		tp.writeProperty(nameI, value, properties, typed = false)
+		assert(tp.loadProperty(nameI, properties, typed = false).contains(value))
+
+		// assert it can be read as a string
+		val strValue = tp.write(value)
+		assert(StringProperty.loadProperty(nameI, properties, typed = false).contains(strValue))
+
+		// assert that any anything that anything that can be written as a character can also be loaded as one
+		if (strValue.length == 1) {
+			assert(CharProperty.loadProperty(nameI, properties, typed = false).contains(strValue.head))
+		}
+	}
+}
+
 class TypedPropertySuite extends Suites {
-	new TypedPropertyTest; new TypedPropertyReadWriteTest
+	new TypedPropertyTest
+	new TypedPropertyReadWriteTypedTest
+	new TypedPropertyReadWriteUntypedTest
 }

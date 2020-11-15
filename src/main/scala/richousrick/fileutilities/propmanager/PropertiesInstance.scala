@@ -40,13 +40,17 @@ object PropertiesInstance {
 		case tp => Some(tp.asInstanceOf[TypedProperty[T]])
 	}
 
-	def apply(): PropertiesInstance = new PropertiesInstance(new Properties())
+	def apply(typed: Boolean = true): PropertiesInstance = new PropertiesInstance(new Properties(), typed)
 }
 
 /**
  * Class used to store a collection of properties that can be automatically loaded and written to the properties file.
+ *
+ * @param properties base properties instance that is being wrapped.
+ * @param typed      if the properties should be marked with their type. If false then conversions may be possible.
+ *                   For instance the value '1' could be loaded as a: character, string, or numeric type
  */
-class PropertiesInstance(private val properties: Properties) {
+class PropertiesInstance(private val properties: Properties, private val typed: Boolean) {
 
 	/**
 	 * Loads an instance from a file
@@ -67,14 +71,16 @@ class PropertiesInstance(private val properties: Properties) {
 	 *
 	 * @param name  name of the property to store
 	 * @param value value of the property
+	 * @param typed if the variable should be stored with its type.
 	 * @param tt    TypeTag of type T
 	 * @tparam T type of the property being stored
 	 * @return true if the property was successfully stored
 	 */
-	def setProperty[T](name: String, value: T)(implicit tt: TypeTag[T]): Boolean = PropertiesInstance
+	def setProperty[T](name: String, value: T, typed: Boolean = this.typed)
+										(implicit tt: TypeTag[T]): Boolean = PropertiesInstance
 		.resolveHandler[T] match {
 		case Some(handler) =>
-			handler.writeProperty(name, value, properties)
+			handler.writeProperty(name, value, properties, typed)
 			true
 
 		case None => false
@@ -83,16 +89,17 @@ class PropertiesInstance(private val properties: Properties) {
 	/**
 	 * Attempts to read a property from the properties list
 	 *
-	 * @param name name of the property to read
-	 * @param tt   TypeTag of type T
+	 * @param name  name of the property to read
+	 * @param typed if the variable was stored with its type
+	 * @param tt    TypeTag of type T
 	 * @tparam T type of the property being loaded
 	 * @return the value if it was loaded successfully; None otherwise
 	 */
-	def getProperty[T](name: String)(implicit tt: TypeTag[T]): Option[T] = {
+	def getProperty[T](name: String, typed: Boolean = this.typed)(implicit tt: TypeTag[T]): Option[T] = {
 		val handler = PropertiesInstance.resolveHandler[T]
 
 		handler match {
-			case Some(handler) => handler.loadProperty(name, properties)
+			case Some(handler) => handler.loadProperty(name, properties, typed)
 			case None => None
 		}
 	}

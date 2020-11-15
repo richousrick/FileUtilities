@@ -33,11 +33,12 @@ sealed abstract class TypedProperty[T] {
 	 *
 	 * @param name       of the property to load
 	 * @param properties collection of properties to load the desired value from from
+	 * @param typed      if the stored properties are marked with their type
 	 * @return the desired value if it exists in the properties object and can be parsed. None otherwise.
 	 */
-	def loadProperty(name: String, properties: Properties): Option[T] =
-		getThisType(name, properties) match {
-			case Some(v) => load(v.drop(1))
+	def loadProperty(name: String, properties: Properties, typed: Boolean = true): Option[T] =
+		getThisType(name, properties, typed) match {
+			case Some(v) => if (typed) load(v.drop(1)) else load(v)
 			case None => None
 		}
 
@@ -55,10 +56,11 @@ sealed abstract class TypedProperty[T] {
 	 *
 	 * @param name       to store the property as
 	 * @param value      of the property to write
+	 * @param typed      if the property should be marked with its type
 	 * @param properties file to write the property to
 	 */
-	def writeProperty(name: String, value: T, properties: Properties): Unit =
-		properties.setProperty(name, prefix + write(value))
+	def writeProperty(name: String, value: T, properties: Properties, typed: Boolean = true): Unit =
+		properties.setProperty(name, (if (typed) prefix else "") + write(value))
 
 
 	/**
@@ -68,20 +70,22 @@ sealed abstract class TypedProperty[T] {
 	 * @param name       name of the property to test existence of
 	 * @param properties to test contain the desired property
 	 * @return true if a property with the specified name matching type T exists in properties; false otherwise.
+	 * @deprecated needs to be updated to handle untyped files and enum conflicts
 	 */
 	def hasThisType(name: String, properties: Properties): Boolean =
-		getThisType(name, properties).isDefined
+		getThisType(name, properties, typed = true).isDefined
 
 	/**
 	 * Attempts to get the value of the property with the given name; if it is of type T.
 	 *
 	 * @param name       of the property to get
 	 * @param properties collection of properties to search
+	 * @param typed      if the stored properties are marked with their type
 	 * @return the value mapped to the property with the desired name, if it is of type T. None otherwise.
 	 */
-	private def getThisType(name: String, properties: Properties): Option[String] =
+	private def getThisType(name: String, properties: Properties, typed: Boolean): Option[String] =
 		properties.getProperty(name) match {
-			case p if p != null && p.nonEmpty && p.head == prefix => Some(p)
+			case p if p != null && (!typed || p.head == prefix) => Some(p)
 			case _ => None
 		}
 }
