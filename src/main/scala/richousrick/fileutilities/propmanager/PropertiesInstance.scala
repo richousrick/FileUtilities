@@ -40,31 +40,30 @@ object PropertiesInstance {
 		case tp => Some(tp.asInstanceOf[TypedProperty[T]])
 	}
 
-	def apply(typed: Boolean = true): PropertiesInstance = new PropertiesInstance(new Properties(), typed)
+	def apply(typed: Boolean = true): PropertiesInstance = new PropertiesInstance(typed)
 }
 
 /**
  * Class used to store a collection of properties that can be automatically loaded and written to the properties file.
  *
- * @param properties base properties instance that is being wrapped.
- * @param typed      if the properties should be marked with their type. If false then conversions may be possible.
- *                   For instance the value '1' could be loaded as a: character, string, or numeric type
+ * @param typed if the properties should be marked with their type. If false then conversions may be possible.
+ *              For instance the value '1' could be loaded as a: character, string, or numeric type
  */
-class PropertiesInstance(private val properties: Properties, private val typed: Boolean) {
+class PropertiesInstance(private val typed: Boolean) extends Properties {
 
 	/**
 	 * Loads an instance from a file
 	 *
 	 * @param path path to the file the properties should be read from
 	 */
-	def load(path: Path): Unit = PropertiesIO.readConfigSwallow(path, properties)
+	def load(path: Path): Unit = PropertiesIO.readConfigSwallow(path, this)
 
 	/**
 	 * Writes the instance to a file
 	 *
 	 * @param path path to the file the properties should be written to
 	 */
-	def write(path: Path): Unit = PropertiesIO.writeConfigSwallow(path, properties)
+	def write(path: Path): Unit = PropertiesIO.writeConfigSwallow(path, this)
 
 	/**
 	 * Attempts to add the specified key value pair to the properties list.
@@ -80,7 +79,7 @@ class PropertiesInstance(private val properties: Properties, private val typed: 
 										(implicit tt: TypeTag[T]): Boolean = PropertiesInstance
 		.resolveHandler[T] match {
 		case Some(handler) =>
-			handler.writeProperty(name, value, properties, typed)
+			handler.writeProperty(name, value, this, typed)
 			true
 
 		case None => false
@@ -99,7 +98,7 @@ class PropertiesInstance(private val properties: Properties, private val typed: 
 		val handler = PropertiesInstance.resolveHandler[T]
 
 		handler match {
-			case Some(handler) => handler.loadProperty(name, properties, typed)
+			case Some(handler) => handler.loadProperty(name, this, typed)
 			case None => None
 		}
 	}
