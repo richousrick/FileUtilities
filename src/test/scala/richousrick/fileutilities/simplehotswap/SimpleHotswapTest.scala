@@ -18,7 +18,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 			val prop = SimpleHotswap.setupConfig(path, useLinks)
 			assert(prop.propertyNames().asScala.toSet == Set("targetFile", "useLinks"))
 			assert(prop.getProperty("targetFile") == path)
-			assert(prop.getProperty("useLinks") == useLinks + "")
+			assert(prop.getProperty[LinkType]("useLinks").contains(useLinks))
 		}
 
 		testParams("""D:\some\path\to the\File\target.txt""", LinkType.Copy)

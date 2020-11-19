@@ -2,7 +2,8 @@ package richousrick.fileutilities.simplehotswap
 
 import java.io.IOException
 import java.nio.file.{Files, Path}
-import java.util.Properties
+
+import richousrick.fileutilities.propmanager.PropertiesInstance
 
 /**
  * Simple tool to handle hot swapping of different versions of a file or directory
@@ -42,10 +43,10 @@ object SimpleHotswap {
 	 * @param linkType   how the current loaded version should be linked to stored instances
 	 * @return the properties file
 	 */
-	def setupConfig(targetFile: String, linkType: LinkType): Properties = {
-		val prop = new Properties()
+	def setupConfig(targetFile: String, linkType: LinkType): PropertiesInstance = {
+		val prop = PropertiesInstance()
 		prop.setProperty("targetFile", targetFile)
-		prop.setProperty("useLinks", linkType.toString)
+		prop.setProperty("useLinks", linkType)
 		prop
 	}
 
