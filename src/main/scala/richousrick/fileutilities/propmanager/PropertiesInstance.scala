@@ -3,44 +3,14 @@ package richousrick.fileutilities.propmanager
 import java.nio.file.Path
 import java.util.Properties
 
-import scala.reflect.runtime.universe.{TypeRef, TypeTag, typeOf}
+import scala.reflect.runtime.universe.TypeTag
 
 /**
  * Companion object for [[richousrick.fileutilities.propmanager.PropertiesInstance]].
  */
 object PropertiesInstance {
 
-	/**
-	 * Gets an instance of [[richousrick.fileutilities.propmanager.TypedProperty TypedProperty]] that can handle a desired datatype.
-	 *
-	 * @param tt type tag of the desired datatype
-	 * @tparam T desired datatype
-	 * @return a [[richousrick.fileutilities.propmanager.TypedProperty TypedProperty]] that can handle data T, or None if T is an unsupported datatype
-	 */
-	private def resolveHandler[T](implicit tt: TypeTag[T]): Option[TypedProperty[T]] = (tt.tpe match {
-		case e if e <:< typeOf[Enumeration] => EnumProperty.makeInstance(tt.mirror
-			.runtimeClass(tt.tpe)
-			.asSubclass[Enumeration](classOf[Enumeration]))
-		case v if v <:< typeOf[Enumeration#Value] =>
-			EnumProperty.makeInstance(tt.mirror
-				.runtimeClass(typeOf[T].widen.asInstanceOf[TypeRef].pre.typeSymbol.asClass)
-				.asSubclass[Enumeration](classOf[Enumeration]))
-		case s if s =:= typeOf[String] => StringProperty
-		case c if c =:= typeOf[Char] => CharProperty
-		case b if b =:= typeOf[Boolean] => BooleanProperty
-		case b if b =:= typeOf[Byte] => ByteProperty
-		case s if s =:= typeOf[Short] => ShortProperty
-		case i if i =:= typeOf[Int] => IntProperty
-		case l if l =:= typeOf[Long] => LongProperty
-		case f if f =:= typeOf[Float] => FloatProperty
-		case d if d =:= typeOf[Double] => DoubleProperty
-		case _ => null
-	}) match {
-		case null => None
-		case tp => Some(tp.asInstanceOf[TypedProperty[T]])
-	}
-
-	def apply(typed: Boolean = true): PropertiesInstance = new PropertiesInstance(typed)
+	def apply(typed: Boolean = true, handlers: Set[TypeHandler[_]] = TypeHandler.defaultHandlers): PropertiesInstance = new PropertiesInstance(typed, handlers)
 }
 
 /**
@@ -49,7 +19,7 @@ object PropertiesInstance {
  * @param typed if the properties should be marked with their type. If false then conversions may be possible.
  *              For instance the value '1' could be loaded as a: character, string, or numeric type
  */
-class PropertiesInstance(private val typed: Boolean) extends Properties {
+class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_]]) extends Properties {
 
 	/**
 	 * Loads an instance from a file
@@ -76,8 +46,8 @@ class PropertiesInstance(private val typed: Boolean) extends Properties {
 	 * @return true if the property was successfully stored
 	 */
 	def setProperty[T](name: String, value: T, typed: Boolean = this.typed)
-										(implicit tt: TypeTag[T]): Boolean = PropertiesInstance
-		.resolveHandler[T] match {
+										(implicit tt: TypeTag[T]): Boolean = TypeHandler
+		.resolveHandler[T](handlers) match {
 		case Some(handler) =>
 			handler.writeProperty(name, value, this, typed)
 			true
@@ -95,7 +65,7 @@ class PropertiesInstance(private val typed: Boolean) extends Properties {
 	 * @return the value if it was loaded successfully; None otherwise
 	 */
 	def getProperty[T](name: String, typed: Boolean = this.typed)(implicit tt: TypeTag[T]): Option[T] = {
-		val handler = PropertiesInstance.resolveHandler[T]
+		val handler = TypeHandler.resolveHandler[T](handlers)
 
 		handler match {
 			case Some(handler) => handler.loadProperty(name, this, typed)
