@@ -12,14 +12,40 @@ import scala.reflect.runtime.universe.TypeTag
 class TypeHandlerTest extends AnyFunSuite {
 
   test("resolveHandler resolves the correct primitive types") {
-    tryTest[String](StringProperty)
-    tryTest[Char](CharProperty)
-    tryTest[Byte](ByteProperty)
-    tryTest[Short](ShortProperty)
-    tryTest[Int](IntProperty)
-    tryTest[Long](LongProperty)
-    tryTest[Float](FloatProperty)
-    tryTest[Double](DoubleProperty)
+    tryTest[String](defaultHandlers)
+    tryTest[Char](defaultHandlers)
+    tryTest[Byte](defaultHandlers)
+    tryTest[Short](defaultHandlers)
+    tryTest[Int](defaultHandlers)
+    tryTest[Long](defaultHandlers)
+    tryTest[Float](defaultHandlers)
+    tryTest[Double](defaultHandlers)
+  }
+
+  test("resolveHandler resolves the correct primitive types with generated handlers") {
+    val generatedHandlers: Set[TypeHandler[_]] = Set(
+      buildHandler('b', _.toByteOption),
+      buildHandler('s', _.toShortOption),
+      buildHandler('i', _.toIntOption),
+      buildHandler('l', _.toLongOption),
+      buildHandler('f', _.toFloatOption),
+      buildHandler('d', _.toDoubleOption),
+      buildHandler('o', _.toBooleanOption),
+      buildHandler('c', (s: String) => if (s.length == 1) {
+        Some(s(0))
+      } else {
+        None
+      }),
+      buildHandler[String]('w', Some(_))
+    )
+    tryTest[String](generatedHandlers)
+    tryTest[Char](generatedHandlers)
+    tryTest[Byte](generatedHandlers)
+    tryTest[Short](generatedHandlers)
+    tryTest[Int](generatedHandlers)
+    tryTest[Long](generatedHandlers)
+    tryTest[Float](generatedHandlers)
+    tryTest[Double](generatedHandlers)
   }
 
   test("resolverHandler resolves enums from values") {
@@ -47,8 +73,7 @@ class TypeHandlerTest extends AnyFunSuite {
     assert(resolveHandler[List[String]](defaultHandlers).isEmpty)
   }
 
-  def tryTest[T: TypeTag](expected: TypedProperty[_]): Unit = {
-    assert(resolveHandler[T](defaultHandlers).contains(expected))
-    assert(resolveHandler[T](baseHandlers).contains(expected))
+  def tryTest[T: TypeTag](handlers: Set[TypeHandler[_]]): Unit = {
+    assert(resolveHandler[T](handlers).isDefined)
   }
 }

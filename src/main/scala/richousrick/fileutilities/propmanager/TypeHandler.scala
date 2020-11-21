@@ -40,6 +40,42 @@ object TypeHandler {
     handlers.collectFirst {
       case e if e.matchesType[T] => e.getInstance[T]
     }
+
+
+  /**
+   * Constructs a simple handler for a given type.
+   * Note handlers are selected on a first found basis. Not best fit.
+   * I.e. given handlers for types T, S &lt;: T, either handler may be selected for an object of type S, as both are valid.
+   * However, the handler for S is not valid for data of type T.
+   *
+   * @param prefix_ character to prepend to the value when using typed mode.
+   * @param write_  function to convert an object of type T to a string that can be written to the file
+   * @param load_   function to attempt to load a value written using the write_ method.
+   * @tparam T type of the data that this handler should be able to handle
+   * @return a handler that supports type T
+   */
+  def buildHandler[T: TypeTag](prefix_ : Char,
+                               load_ : String => Option[T],
+                               write_ : T => String = (t: T) => t.toString): TypeHandler[T] = {
+    new PrimitiveTypeHandler[T](new TypedProperty[T] {
+      /**
+       * Prefix for property name
+       *
+       * @return a prefix used to identify the property type
+       */
+      override def prefix: Char = prefix_
+
+      /**
+       * Attempts to parse the given value to an instance of type T
+       *
+       * @param value value to attempt to instantiate.
+       * @return an instance of type T, If one can be created.
+       */
+      override def load(value: String): Option[T] = load_(value)
+
+      override def write(value: T): String = write_(value)
+    })
+  }
 }
 
 

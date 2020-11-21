@@ -11,7 +11,7 @@ import scala.reflect.runtime.universe.runtimeMirror
  *
  * @tparam T base type handled by the TypedProperty instance
  */
-sealed abstract class TypedProperty[T] {
+abstract class TypedProperty[T] {
 
 	/**
 	 * Prefix for property name
