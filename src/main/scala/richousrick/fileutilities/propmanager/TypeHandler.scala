@@ -1,6 +1,5 @@
 package richousrick.fileutilities.propmanager
 
-import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.{TypeRef, TypeTag, typeOf}
 
 object TypeHandler {
@@ -91,7 +90,7 @@ class PrimitiveTypeHandler[T: TypeTag](private val handler: TypedProperty[T]) ex
  * To generate instances from references to the Enum's type use [[richousrick.fileutilities.propmanager.EnumTypeHandler EnumTypeHandler]]
  */
 class EnumValueTypeHandler extends TypeHandler[Enumeration#Value] {
-  override def getInstance[I](implicit tt: universe.TypeTag[I]): TypedProperty[I] = EnumProperty.makeInstance(tt.mirror
+  override def getInstance[I](implicit tt: TypeTag[I]): TypedProperty[I] = EnumProperty.makeInstance(tt.mirror
     .runtimeClass(typeOf[I].widen.asInstanceOf[TypeRef].pre.typeSymbol.asClass)
     .asSubclass[Enumeration](classOf[Enumeration])).asInstanceOf[TypedProperty[I]]
 }
@@ -102,7 +101,7 @@ class EnumValueTypeHandler extends TypeHandler[Enumeration#Value] {
  * To generate instances from references to Enum's values use [[richousrick.fileutilities.propmanager.EnumValueTypeHandler EnumValueTypeHandler]]
  */
 class EnumTypeHandler extends TypeHandler[Enumeration] {
-  override def getInstance[I](implicit ti: universe.TypeTag[I]): TypedProperty[I] =
+  override def getInstance[I](implicit ti: TypeTag[I]): TypedProperty[I] =
     EnumProperty.makeInstance(ti.mirror
       .runtimeClass(ti.tpe)
       .asSubclass[Enumeration](classOf[Enumeration])).asInstanceOf[TypedProperty[I]]
