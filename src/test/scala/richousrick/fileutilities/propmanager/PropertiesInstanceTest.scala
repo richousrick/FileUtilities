@@ -1,5 +1,7 @@
 package richousrick.fileutilities.propmanager
 
+import java.nio.file.{Path, Paths}
+
 import org.scalatest.funsuite.AnyFunSuite
 import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
 
@@ -73,6 +75,11 @@ class PropertiesInstanceTest extends AnyFunSuite {
 		Random.setSeed(3)
 		readWriteTest("generated", Random.nextString(1024 * 512))
 		readWriteTest("empty", "")
+	}
+
+	test("Unsupported handler throws exception") {
+		assertThrows[UnsupportedOperationException](properties.setProperty[Path]("pathVar", Paths.get("c:/")))
+		assertThrows[UnsupportedOperationException](properties.getProperty[Path]("pathVar"))
 	}
 
 	def readWriteTest[T](name: String, value: T)(implicit tt: TypeTag[T], ct: ClassTag[T]): Unit = {

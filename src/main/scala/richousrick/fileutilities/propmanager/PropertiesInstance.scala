@@ -44,13 +44,14 @@ class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_
 	 * @param tt    TypeTag of type T
 	 * @tparam T type of the property being stored
 	 * @return the previous value of the specified property, if one existed
+	 * @throws UnsupportedOperationException if no handlers support type T
 	 */
 	def setProperty[T](name: String, value: T, typed: Boolean = this.typed)
 										(implicit tt: TypeTag[T]): Option[String] = TypeHandler
 		.resolveHandler[T](handlers) match {
 		case Some(handler) =>
 			handler.writeProperty(name, value, this, typed)
-		case None => None
+		case None => throw new UnsupportedOperationException(s"No handler was found for type ${tt.tpe}")
 	}
 
 	/**
@@ -61,13 +62,14 @@ class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_
 	 * @param tt    TypeTag of type T
 	 * @tparam T type of the property being loaded
 	 * @return the value if it was loaded successfully; None otherwise
+	 * @throws UnsupportedOperationException if no handlers support type T
 	 */
 	def getProperty[T](name: String, typed: Boolean = this.typed)(implicit tt: TypeTag[T]): Option[T] = {
 		val handler = TypeHandler.resolveHandler[T](handlers)
 
 		handler match {
 			case Some(handler) => handler.loadProperty(name, this, typed)
-			case None => None
+			case None => throw new UnsupportedOperationException(s"No handler was found for type ${tt.tpe}")
 		}
 	}
 }
