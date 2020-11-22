@@ -76,7 +76,12 @@ class PropertiesInstanceTest extends AnyFunSuite {
 	}
 
 	def readWriteTest[T](name: String, value: T)(implicit tt: TypeTag[T], ct: ClassTag[T]): Unit = {
-		assert(properties.setProperty[T](name, value))
+		if (properties.containsKey(name)) {
+			assert(properties.setProperty[T](name, value).isDefined)
+		} else {
+			assert(properties.getProperty[T](name).isEmpty)
+			assert(properties.setProperty[T](name, value).isEmpty)
+		}
 		assert(properties.getProperty[T](name).contains(value))
 	}
 }

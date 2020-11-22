@@ -59,8 +59,11 @@ abstract class TypedProperty[T] {
 	 * @param typed      if the property should be marked with its type
 	 * @param properties file to write the property to
 	 */
-	def writeProperty(name: String, value: T, properties: Properties, typed: Boolean = true): Unit =
-		properties.setProperty(name, (if (typed) prefix else "") + write(value))
+	def writeProperty(name: String, value: T, properties: Properties, typed: Boolean = true): Option[String] =
+		properties.setProperty(name, (if (typed) prefix else "") + write(value)) match {
+			case null => None
+			case o => Some(o.toString)
+		}
 
 
 	/**

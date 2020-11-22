@@ -43,16 +43,14 @@ class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_
 	 * @param typed if the variable should be stored with its type.
 	 * @param tt    TypeTag of type T
 	 * @tparam T type of the property being stored
-	 * @return true if the property was successfully stored
+	 * @return the previous value of the specified property, if one existed
 	 */
 	def setProperty[T](name: String, value: T, typed: Boolean = this.typed)
-										(implicit tt: TypeTag[T]): Boolean = TypeHandler
+										(implicit tt: TypeTag[T]): Option[String] = TypeHandler
 		.resolveHandler[T](handlers) match {
 		case Some(handler) =>
 			handler.writeProperty(name, value, this, typed)
-			true
-
-		case None => false
+		case None => None
 	}
 
 	/**
