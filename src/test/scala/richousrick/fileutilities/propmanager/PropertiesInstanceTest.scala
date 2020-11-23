@@ -3,6 +3,7 @@ package richousrick.fileutilities.propmanager
 import java.nio.file.{Path, Paths}
 
 import org.scalatest.funsuite.AnyFunSuite
+import richousrick.fileutilities.lib.MockUtils
 import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
 
 import scala.math.BigDecimal.RoundingMode
@@ -90,5 +91,13 @@ class PropertiesInstanceTest extends AnyFunSuite {
 			assert(properties.setProperty[T](name, value).isEmpty)
 		}
 		assert(properties.getProperty[T](name).contains(value))
+	}
+
+	test("Properties read/write") {
+		val fs = MockUtils.generateMockFilesystemWin()._1
+		val propLoc = fs.getPath("SomeFile.prop")
+		assert(!properties.load(propLoc))
+		assert(properties.write(propLoc))
+		assert(properties.load(propLoc))
 	}
 }

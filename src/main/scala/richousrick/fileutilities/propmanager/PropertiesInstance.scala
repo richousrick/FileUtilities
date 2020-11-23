@@ -25,15 +25,17 @@ class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_
 	 * Loads an instance from a file
 	 *
 	 * @param path path to the file the properties should be read from
+	 * @return true, if properties were loaded successfully from the given file
 	 */
-	def load(path: Path): Unit = PropertiesIO.readConfigSwallow(path, this)
+	def load(path: Path): Boolean = PropertiesIO.readConfigSwallow(path, this).isDefined
 
 	/**
 	 * Writes the instance to a file
 	 *
 	 * @param path path to the file the properties should be written to
+	 * @return true, if properties were saved successfully to the given file
 	 */
-	def write(path: Path): Unit = PropertiesIO.writeConfigSwallow(path, this)
+	def write(path: Path): Boolean = PropertiesIO.writeConfigSwallow(path, this)
 
 	/**
 	 * Attempts to add the specified key value pair to the properties list.
