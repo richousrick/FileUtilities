@@ -36,7 +36,10 @@ object PropertiesIO {
 	def writeConfig(configFile: Path, prop: Properties): Unit =
 		Using.Manager { use =>
 			// create parent dir if missing
-			Files.createDirectories(configFile.getParent)
+			Option(configFile.getParent) match {
+				case Some(parent) => Files.createDirectories(parent)
+				case None =>
+			}
 
 			val channel = use(FileChannel.open(configFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE))
 			use(channel.lock())
