@@ -10,16 +10,42 @@ import scala.reflect.runtime.universe.TypeTag
  */
 object PropertiesInstance {
 
-	def apply(typed: Boolean = true, handlers: Set[TypeHandler[_]] = TypeHandler.defaultHandlers): PropertiesInstance = new PropertiesInstance(typed, handlers)
+	/**
+	 * Creates a properties instance that has support for additional types
+	 *
+	 * @param additionalHandlers handlers supporting additional types.
+	 *                           Note: handlers are used on a first found basis not best fit.
+	 * @param typed              if the properties should be marked with their type. If false then conversions may be possible.
+	 *                           For instance the value '1' could be loaded as a: character, string, or numeric type
+	 */
+	def apply(additionalHandlers: Set[TypeHandler[_]], typed: Boolean = true): PropertiesInstance = new PropertiesInstance(typed, additionalHandlers)
+
+	/**
+	 * Creates a simple properties instance that will use the global handlers
+	 *
+	 * @param typed if the properties should be marked with their type. If false then conversions may be possible.
+	 *              For instance the value '1' could be loaded as a: character, string, or numeric type
+	 */
+	def apply(typed: Boolean): PropertiesInstance = new PropertiesInstance(typed)
+
+	/**
+	 * Creates a simple typed properties instance that will use the global handlers
+	 */
+	def apply(): PropertiesInstance = new PropertiesInstance(true)
+
 }
 
 /**
  * Class used to store a collection of properties that can be automatically loaded and written to the properties file.
  *
- * @param typed if the properties should be marked with their type. If false then conversions may be possible.
- *              For instance the value '1' could be loaded as a: character, string, or numeric type
+ * @param typed                if the properties should be marked with their type. If false then conversions may be possible.
+ *                             For instance the value '1' could be loaded as a: character, string, or numeric type
+ * @param customHandlers       optional set of TypeHandlers that either provide support for unsupported types, or replace the original handlers
+ * @param ignoreHandlers       set of global handlers that should be ignored. This exists mainly to support overwriting global handlers in favour of specialised custom handlers.
+ * @param ignoreGlobalHandlers if false then the global handlers not present in ignoreHandlers will be used in addition to the customHandlers.
  */
-class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_]]) extends Properties {
+class PropertiesInstance(val typed: Boolean, val customHandlers: Set[TypeHandler[_]] = Set(), val ignoreHandlers: Set[TypeHandler[_]] = Set(), val ignoreGlobalHandlers: Boolean = false) extends Properties {
+
 
 	/**
 	 * Loads an instance from a file
@@ -38,6 +64,13 @@ class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_
 	def write(path: Path): Boolean = PropertiesIO.writeConfigSwallow(path, this)
 
 	/**
+	 * Gets the handlers supported by this instance
+	 *
+	 * @return the handlers supported by this instance
+	 */
+	private def getHandlers: Set[TypeHandler[_]] = if (ignoreGlobalHandlers) customHandlers else (TypeHandler.globalHandlers -- ignoreHandlers) ++ customHandlers
+
+	/**
 	 * Attempts to add the specified key value pair to the properties list.
 	 *
 	 * @param name  name of the property to store
@@ -50,7 +83,7 @@ class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_
 	 */
 	def setProperty[T](name: String, value: T, typed: Boolean = this.typed)
 										(implicit tt: TypeTag[T]): Option[String] = TypeHandler
-		.resolveHandler[T](handlers) match {
+		.resolveHandler[T](getHandlers) match {
 		case Some(handler) =>
 			handler.writeProperty(name, value, this, typed)
 		case None => throw new UnsupportedOperationException(s"No handler was found for type ${tt.tpe}")
@@ -67,9 +100,7 @@ class PropertiesInstance(private val typed: Boolean, handlers: Set[TypeHandler[_
 	 * @throws UnsupportedOperationException if no handlers support type T
 	 */
 	def getProperty[T](name: String, typed: Boolean = this.typed)(implicit tt: TypeTag[T]): Option[T] = {
-		val handler = TypeHandler.resolveHandler[T](handlers)
-
-		handler match {
+		TypeHandler.resolveHandler[T](getHandlers) match {
 			case Some(handler) => handler.loadProperty(name, this, typed)
 			case None => throw new UnsupportedOperationException(s"No handler was found for type ${tt.tpe}")
 		}

@@ -25,9 +25,15 @@ object TypeHandler {
   val enumHandlers: Set[TypeHandler[_]] = Set(new EnumTypeHandler(), new EnumValueTypeHandler())
 
   /**
-   * list of the default handlers
+   * list of the default supported handlers
    */
   val defaultHandlers: Set[TypeHandler[_]] = baseHandlers ++ enumHandlers
+
+  /**
+   * Handlers that will be used as default by all functions
+   */
+  var globalHandlers: Set[TypeHandler[_]] = defaultHandlers
+
 
   /**
    * Gets an instance of [[richousrick.fileutilities.propmanager.TypedProperty TypedProperty]] that can handle a desired datatype.
