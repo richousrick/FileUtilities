@@ -9,7 +9,7 @@ import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
 import scala.math.BigDecimal.RoundingMode
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
-import scala.util.Random
+import scala.util.{Random, Try}
 
 class PropertiesInstanceTest extends AnyFunSuite {
 	val properties: PropertiesInstance = PropertiesInstance()
@@ -99,5 +99,65 @@ class PropertiesInstanceTest extends AnyFunSuite {
 		assert(!properties.load(propLoc))
 		assert(properties.write(propLoc))
 		assert(properties.load(propLoc))
+	}
+
+	test("Properties specific type handling") {
+		val (fs, somePath) = MockUtils.generateMockFilesystemWin()
+		val p2 = PropertiesInstance(Set[TypeHandler[_]](TypeHandler.buildHandler('P',
+			(s: String) => Try(fs.getPath(s)).toOption)))
+
+		assertThrows[UnsupportedOperationException](properties.setProperty("myPath", somePath))
+		assert(p2.setProperty("myPath", somePath).isEmpty)
+
+		assertThrows[UnsupportedOperationException](properties.getProperty[Path]("myPath"))
+		assert({
+			val loadedPath = p2.getProperty[Path]("myPath"); loadedPath.nonEmpty && loadedPath.get == somePath
+		})
+	}
+
+	test("Adding global type handlers") {
+		val (fs, somePath) = MockUtils.generateMockFilesystemWin()
+
+		assertThrows[UnsupportedOperationException](properties.setProperty("myPath", somePath))
+		assertThrows[UnsupportedOperationException](properties.getProperty[Path]("myPath"))
+
+		TypeHandler.globalHandlers += TypeHandler.buildHandler('P', (s: String) => Try(fs.getPath(s)).toOption)
+
+		assert(properties.setProperty("myPath", somePath).isEmpty)
+		assert({
+			val loadedPath = properties.getProperty[Path]("myPath"); loadedPath.nonEmpty && loadedPath.get == somePath
+		})
+	}
+
+	test("Replacing type handlers") {
+		val add10 = TypeHandler.buildHandler('i', _.toIntOption match {
+			case Some(i) => Some(i + 10)
+			case None => None
+		})
+
+		val p2 = new PropertiesInstance(false, Set(add10), Set(TypeHandler.IntHandler))
+
+		assert(properties.setProperty("FortyTwo", 42).isEmpty)
+		assert(p2.setProperty("FortyTwo", 42).isEmpty)
+
+		assert(properties.getProperty[Int]("FortyTwo").contains(42))
+		assert(p2.getProperty[Int]("FortyTwo").contains(52))
+	}
+
+	test("Ignore global handlers") {
+		val add10 = TypeHandler.buildHandler('i', _.toIntOption match {
+			case Some(i) => Some(i + 10)
+			case None => None
+		})
+
+		val p1 = new PropertiesInstance(typed = false, ignoreGlobalHandlers = true)
+
+		val p2 = new PropertiesInstance(false, Set(add10), ignoreGlobalHandlers = true)
+
+		assertThrows[UnsupportedOperationException](p1.setProperty("FortyTwo", 42))
+		assert(p2.setProperty("FortyTwo", 42).isEmpty)
+
+		assertThrows[UnsupportedOperationException](p1.getProperty[Int]("FortyTwo"))
+		assert(p2.getProperty[Int]("FortyTwo").contains(52))
 	}
 }
