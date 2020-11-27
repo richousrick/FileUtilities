@@ -1,7 +1,7 @@
 package richousrick.fileutilities.simplehotswap
 
 import java.nio.channels.{Channels, FileChannel}
-import java.nio.file.{Files, StandardOpenOption}
+import java.nio.file.{Files, Path, Paths, StandardOpenOption}
 
 import org.scalatest.funsuite.AnyFunSuite
 import richousrick.fileutilities.lib.MockUtils
@@ -14,11 +14,16 @@ import scala.util.Using
 class SimpleHotswapTest extends AnyFunSuite {
 
 	test("Setup config should create correct properties") {
-		def testParams(path: String, useLinks: LinkType) = {
+		def testParams(pathStr: String, useLinks: LinkType) = {
+			val path = Paths.get(pathStr)
 			val prop = SimpleHotswap.setupConfig(path, useLinks)
 			assert(prop.propertyNames().asScala.toSet == Set("targetFile", "useLinks"))
-			assert(prop.getProperty("targetFile") == path)
+
 			assert(prop.getProperty[LinkType]("useLinks").contains(useLinks))
+			prop.getProperty[Path]("targetFile") match {
+				case Some(loadedPath) => assert(loadedPath.compareTo(path) == 0)
+				case None => fail
+			}
 		}
 
 		testParams("""D:\some\path\to the\File\target.txt""", LinkType.Copy)
