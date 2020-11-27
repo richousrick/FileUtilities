@@ -4,25 +4,51 @@ import scala.reflect.runtime.universe.{TypeRef, TypeTag, typeOf}
 
 object TypeHandler {
 
+  /** Handler supporting Bytes */
+  val ByteHandler = new PrimitiveTypeHandler(ByteProperty)
+
+  /** Handler supporting Shorts */
+  val ShortHandler = new PrimitiveTypeHandler(ShortProperty)
+
+  /** Handler supporting Integers */
+  val IntHandler = new PrimitiveTypeHandler(IntProperty)
+
+  /** Handler supporting Longs */
+  val LongHandler = new PrimitiveTypeHandler(LongProperty)
+
+  /** Handler supporting Floats */
+  val FloatHandler = new PrimitiveTypeHandler(FloatProperty)
+
+  /** Handler supporting Doubles */
+  val DoubleHandler = new PrimitiveTypeHandler(DoubleProperty)
+
+  /** Handler supporting Booleans */
+  val BooleanHandler = new PrimitiveTypeHandler(BooleanProperty)
+
+  /** Handler supporting Characters */
+  val CharHandler = new PrimitiveTypeHandler(CharProperty)
+
+  /** Handler supporting Strings */
+  val StringHandler = new PrimitiveTypeHandler(StringProperty)
+
+
   /**
    * Handlers for primitive types and Strings
    */
-  val baseHandlers: Set[TypeHandler[_]] = Set(
-    new PrimitiveTypeHandler(ByteProperty),
-    new PrimitiveTypeHandler(ShortProperty),
-    new PrimitiveTypeHandler(IntProperty),
-    new PrimitiveTypeHandler(LongProperty),
-    new PrimitiveTypeHandler(FloatProperty),
-    new PrimitiveTypeHandler(DoubleProperty),
-    new PrimitiveTypeHandler(BooleanProperty),
-    new PrimitiveTypeHandler(CharProperty),
-    new PrimitiveTypeHandler(StringProperty)
-  )
+  val baseHandlers: Set[TypeHandler[_]] = Set(ByteHandler,
+    ShortHandler,
+    IntHandler,
+    LongHandler,
+    FloatHandler,
+    DoubleHandler,
+    BooleanHandler,
+    CharHandler,
+    StringHandler)
 
   /**
    * Handlers to enable Enum types
    */
-  val enumHandlers: Set[TypeHandler[_]] = Set(new EnumTypeHandler(), new EnumValueTypeHandler())
+  val enumHandlers: Set[TypeHandler[_]] = Set(EnumTypeHandler, EnumValueHandler)
 
   /**
    * list of the default supported handlers
@@ -131,7 +157,7 @@ class PrimitiveTypeHandler[T: TypeTag](private val handler: TypedProperty[T]) ex
  * Note this will only work on specific enum instances, for instance RoundingMode.CEILING.type<br>
  * To generate instances from references to the Enum's type use [[richousrick.fileutilities.propmanager.EnumTypeHandler EnumTypeHandler]]
  */
-class EnumValueTypeHandler extends TypeHandler[Enumeration#Value] {
+object EnumValueHandler extends TypeHandler[Enumeration#Value] {
   override def getInstance[I](implicit tt: TypeTag[I]): TypedProperty[I] = EnumProperty.makeInstance(tt.mirror
     .runtimeClass(typeOf[I].widen.asInstanceOf[TypeRef].pre.typeSymbol.asClass)
     .asSubclass[Enumeration](classOf[Enumeration])).asInstanceOf[TypedProperty[I]]
@@ -140,9 +166,9 @@ class EnumValueTypeHandler extends TypeHandler[Enumeration#Value] {
 /**
  * TypeHandler to generate instances from Enumeration types.
  * Note this will only work on enum types, for instance RoundingMode.type<br>
- * To generate instances from references to Enum's values use [[richousrick.fileutilities.propmanager.EnumValueTypeHandler EnumValueTypeHandler]]
+ * To generate instances from references to Enum's values use [[richousrick.fileutilities.propmanager.EnumValueHandler EnumValueTypeHandler]]
  */
-class EnumTypeHandler extends TypeHandler[Enumeration] {
+object EnumTypeHandler extends TypeHandler[Enumeration] {
   override def getInstance[I](implicit ti: TypeTag[I]): TypedProperty[I] =
     EnumProperty.makeInstance(ti.mirror
       .runtimeClass(ti.tpe)
