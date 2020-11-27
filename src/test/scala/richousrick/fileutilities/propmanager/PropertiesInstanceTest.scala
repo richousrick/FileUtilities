@@ -118,15 +118,21 @@ class PropertiesInstanceTest extends AnyFunSuite {
 	test("Adding global type handlers") {
 		val (fs, somePath) = MockUtils.generateMockFilesystemWin()
 
+		val pathHandler = TypeHandler.buildHandler('P', (s: String) => Try(fs.getPath(s)).toOption)
+
 		assertThrows[UnsupportedOperationException](properties.setProperty("myPath", somePath))
 		assertThrows[UnsupportedOperationException](properties.getProperty[Path]("myPath"))
 
-		TypeHandler.globalHandlers += TypeHandler.buildHandler('P', (s: String) => Try(fs.getPath(s)).toOption)
+		TypeHandler.globalHandlers += pathHandler
 
 		assert(properties.setProperty("myPath", somePath).isEmpty)
 		assert({
-			val loadedPath = properties.getProperty[Path]("myPath"); loadedPath.nonEmpty && loadedPath.get == somePath
+			val loadedPath = properties.getProperty[Path]("myPath")
+			loadedPath.nonEmpty && loadedPath.get == somePath
 		})
+
+		// cleanUp
+		TypeHandler.globalHandlers -= pathHandler
 	}
 
 	test("Replacing type handlers") {
