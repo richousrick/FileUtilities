@@ -1,35 +1,15 @@
 package richousrick.fileutilities.simplehotswap
 
 import java.nio.channels.{Channels, FileChannel}
-import java.nio.file.{Files, Path, Paths, StandardOpenOption}
+import java.nio.file.{Files, StandardOpenOption}
 
 import org.scalatest.funsuite.AnyFunSuite
 import richousrick.fileutilities.lib.MockUtils
-import richousrick.fileutilities.simplehotswap.LinkType.LinkType
 
 import scala.jdk.CollectionConverters._
 import scala.util.Using
 
 class SimpleHotswapTest extends AnyFunSuite {
-
-	test("Setup config should create correct properties") {
-		def testParams(pathStr: String, useLinks: LinkType) = {
-			val path = Paths.get(pathStr)
-			val prop = SimpleHotswap.setupConfig(path, useLinks)
-			assert(prop.propertyNames().asScala.toSet == Set("targetFile", "useLinks"))
-
-			assert(prop.getProperty[LinkType]("useLinks").contains(useLinks))
-			prop.getProperty[Path]("targetFile") match {
-				case Some(loadedPath) => assert(loadedPath.compareTo(path) == 0)
-				case None => fail
-			}
-		}
-
-		testParams("""D:\some\path\to the\File\target.txt""", LinkType.Copy)
-		testParams("""D:\some\path\to the\File\target.txt""", LinkType.Hard)
-		testParams("""D:\some\path\to the\File\""", LinkType.Symbolic)
-		testParams("""D:\some\path\to the\File\""", LinkType.Copy)
-	}
 
 	test("Setup a symbolic linked backup file") {
 		val (fs, targetFile) = MockUtils.generateMockFilesystemWin()
@@ -42,7 +22,8 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Symbolic))
+
+		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Symbolic).isDefined)
 
 		// assert the file was successfully copied to the backup folder
 		assert(Files.list(backupDir).count() == 1)
@@ -65,7 +46,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Symbolic))
+		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Symbolic).isDefined)
 
 		// assert the file was successfully copied to the backup folder
 		// Convert both to string instead of for easier readability in print
@@ -93,7 +74,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		// assert filesystem is empty before backup
 		assert(Files.list(backupDir).count() == 0)
-		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Hard))
+		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Hard).isDefined)
 
 		// assert the file was successfully copied to the backup folder
 		assert(Files.list(backupDir).count() == 1)
@@ -118,6 +99,6 @@ class SimpleHotswapTest extends AnyFunSuite {
 		val (fs, targetFile, filesToBackup) = MockUtils.generateMockFilesystemWinDir()
 		val backupDir = fs.getPath("""C:\data\backup""")
 
-		assert(!SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Hard))
+		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Hard).isEmpty)
 	}
 }

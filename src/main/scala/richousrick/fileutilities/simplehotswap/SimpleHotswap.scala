@@ -13,65 +13,136 @@ import scala.util.Try
  */
 object SimpleHotswap {
 
-	// Add support for paths to TypeHandler
-	TypeHandler.globalHandlers += TypeHandler.buildHandler('P', (s: String) => Try(Paths.get(s)).toOption)
-
 	/**
-	 * Creates a new config file for the tool to use
-	 *
-	 * @param targetFile file that the tool should manage instances of
-	 * @param linkType   how the current loaded version should be linked to stored instances
-	 * @return the properties file
-	 */
-	def setupConfig(targetFile: Path, linkType: LinkType): PropertiesInstance = {
-		val prop = PropertiesInstance()
-		prop.setProperty("targetFile", targetFile)
-		prop.setProperty("useLinks", linkType)
-		prop
-	}
-
-	/**
-	 * Moves the target file to the instance folder and creates a link in its place referring to its new position
+	 * Sets up a fresh SimpleHotswap instance
 	 *
 	 * @param instanceFolder location to store the current instance
 	 * @param targetFile     file to be moved and replaced with a link
 	 * @param linkType       method of linking the target instance to the current version
+	 */
+	def setupInstance(instanceFolder: Path, targetFile: Path, linkType: LinkType): Option[SimpleHotswap] = {
+		Files.createDirectories(instanceFolder)
+
+		// assert instanceFolder is empty
+		if (Files.list(instanceFolder).count != 0) {
+			return None
+		}
+
+		val instance = new SimpleHotswap(instanceFolder, targetFile, linkType)
+		// backup current instance
+		if (!instance.createInstance("currentVersionInstance.current", overwrite = false, initial = true)) {
+			return None
+		}
+
+		if (!instance.loadInstance("currentVersionInstance.current")) {
+			return None
+		}
+		instance.storeConfig()
+		Some(instance)
+	}
+}
+
+/**
+ * Class used to create various instances of a file / folder and load them
+ *
+ * @param instanceFolder location to store the current instance
+ * @param targetFile     file to be moved and replaced with a link
+ * @param linkType       method of linking the target instance to the current version
+ */
+class SimpleHotswap(val instanceFolder: Path, val targetFile: Path, val linkType: LinkType) {
+
+	/**
+	 * Creates a backup of the current state of the file and stores it to the file with the specified name
+	 *
+	 * @param instanceName name to store the new instance
+	 * @param overwrite    if true any instances with that name will be overwritten. Otherwise if an instance with the same name exists
+	 *                     , the method will fail and return false.
 	 * @return true if successful
 	 */
-	def setupInstance(instanceFolder: Path, targetFile: Path, linkType: LinkType): Boolean = {
+	def createInstance(instanceName: String, overwrite: Boolean = false): Boolean =
+		createInstance(instanceName, overwrite, initial = false)
+
+	/**
+	 * Creates a backup of the current state of the file and stores it to the file with the specified name
+	 *
+	 * @param instanceName name to store the new instance
+	 * @param overwrite    if true any instances with that name will be overwritten. Otherwise if an instance with the same name exists
+	 *                     , the method will fail and return false.
+	 * @param initial      if this is the first instance
+	 * @return true if successful
+	 */
+	private def createInstance(instanceName: String, overwrite: Boolean, initial: Boolean): Boolean = {
 		if (linkType == LinkType.Hard && Files.isDirectory(targetFile)) {
 			System.err.println(s"Hard links are unsupported for directories")
 			return false
 		}
 
-		val instance = instanceFolder.resolve("currentVersionInstance.current")
-		try {
-			if (linkType == LinkType.Copy) {
-				Files.copy(targetFile, instance)
-			} else {
-				Files.move(targetFile, instance)
-			}
-		} catch {
-			case e@(_: IOException | _: SecurityException) =>
-				System.err.println(s"Could not move current instance to backup folder ${e.getLocalizedMessage}")
-				return false
+		val instance = instanceFolder.resolve(instanceName)
+
+		// test if instance already exists
+		if (!overwrite && Files.exists(instance)) {
+			return false
 		}
 
 		try {
+			if (initial && linkType != LinkType.Copy) {
+				Files.move(targetFile, instance)
+			} else {
+				Files.copy(targetFile, instance)
+			}
+			true
+		} catch {
+			case e@(_: IOException | _: SecurityException) =>
+				System.err.println(s"Could not move current instance to backup folder ${e.getLocalizedMessage}")
+				false
+		}
+	}
+
+	/**
+	 * Replaces the current instance of the file with the one specified
+	 *
+	 * @param name name of the instance
+	 */
+	def loadInstance(name: String): Boolean = {
+		val instance: Path = instanceFolder.resolve(name)
+		if (!Files.exists(instance)) {
+			return false
+		}
+
+		try {
+			//TODO: Modify to work with copied directories
+			Files.deleteIfExists(targetFile)
 			linkType match {
 				case LinkType.Hard => Files.createLink(targetFile, instance)
 				case LinkType.Symbolic => Files.createSymbolicLink(targetFile, instance)
-				case LinkType.Copy =>
+				case LinkType.Copy => Files.copy(instance, targetFile)
 			}
 			true
 		} catch {
 			case e@(_: IOException | _: SecurityException) =>
 				System.err
-					.println(s"Could not create a link to the current instance from the backup folder ${e.getLocalizedMessage}")
+					.println(s"Could not create a link to the current instance from the backup folder")
+				e.printStackTrace()
 				false
 		}
 	}
+
+
+	/**
+	 * Creates a new config file for the tool to use
+	 *
+	 * @return the properties file
+	 */
+	def storeConfig(): PropertiesInstance = {
+		val prop = PropertiesInstance(Set[TypeHandler[_]](TypeHandler.buildHandler('P',
+			(s: String) => Try(Paths.get(s)).toOption)))
+		prop.setProperty("targetFile", targetFile)
+		prop.setProperty("useLinks", linkType)
+		prop.setProperty("instances", instanceFolder)
+		prop
+	}
 }
+
 
 /**
  * Enum representing the way the versions are loaded for usage<br>
