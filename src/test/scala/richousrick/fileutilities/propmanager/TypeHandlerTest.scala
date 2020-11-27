@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import org.scalatest.funsuite.AnyFunSuite
 import richousrick.fileutilities.propmanager.TypeHandler._
-import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
+import richousrick.fileutilities.simplehotswap.LinkType
 
 import scala.math.BigDecimal.RoundingMode
 import scala.reflect.runtime.universe.TypeTag

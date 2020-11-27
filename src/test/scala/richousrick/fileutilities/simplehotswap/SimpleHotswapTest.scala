@@ -5,8 +5,7 @@ import java.nio.file.{Files, Path, Paths, StandardOpenOption}
 
 import org.scalatest.funsuite.AnyFunSuite
 import richousrick.fileutilities.lib.MockUtils
-import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
-import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType.LinkType
+import richousrick.fileutilities.simplehotswap.LinkType.LinkType
 
 import scala.jdk.CollectionConverters._
 import scala.util.Using

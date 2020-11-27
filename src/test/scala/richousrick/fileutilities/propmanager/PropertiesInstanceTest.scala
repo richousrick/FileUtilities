@@ -4,7 +4,7 @@ import java.nio.file.{Path, Paths}
 
 import org.scalatest.funsuite.AnyFunSuite
 import richousrick.fileutilities.lib.MockUtils
-import richousrick.fileutilities.simplehotswap.SimpleHotswap.LinkType
+import richousrick.fileutilities.simplehotswap.LinkType
 
 import scala.math.BigDecimal.RoundingMode
 import scala.reflect.ClassTag
