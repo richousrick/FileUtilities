@@ -61,7 +61,7 @@ object PropertiesIO {
 		try {
 			Some(readConfig(configFile, prop))
 		} catch {
-			case e: IOException => System.err.println(s"Could not read config file: $e"); None
+			case e: IOException => System.err.println(s"Could not read config file: $e"); e.printStackTrace(); None
 		}
 
 	/**
@@ -76,7 +76,8 @@ object PropertiesIO {
 			use(channel.lock(0L, Long.MaxValue, true))
 			val in = use(Channels.newInputStream(channel))
 			prop.load(in)
-			prop
+			// for some reason ignoring a return statement causes a channelclosedexception to be thrown
+			return prop
 		} match {
 			case Failure(exception) => throw exception
 			case Success(properties) => properties
