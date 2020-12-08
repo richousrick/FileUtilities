@@ -26,8 +26,9 @@ class SimpleHotswapTest extends AnyFunSuite {
 		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Symbolic).isDefined)
 
 		// assert the file was successfully copied to the backup folder
-		assert(Files.list(backupDir).count() == 1)
+		assert(Files.list(backupDir).count() == 2)
 		assert(Files.exists(backupInstance))
+		assert(Files.exists(backupDir.resolve("hotswap.properties")))
 		assert(Files.readAllLines(backupInstance).asScala == fileContents)
 
 		// test link was created successfully
@@ -77,8 +78,9 @@ class SimpleHotswapTest extends AnyFunSuite {
 		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Hard).isDefined)
 
 		// assert the file was successfully copied to the backup folder
-		assert(Files.list(backupDir).count() == 1)
+		assert(Files.list(backupDir).count() == 2)
 		assert(Files.exists(backupInstance))
+		assert(Files.exists(backupDir.resolve("hotswap.properties")))
 		assert(Files.readAllLines(backupInstance).asScala == fileContents)
 
 		// test link was created successfully

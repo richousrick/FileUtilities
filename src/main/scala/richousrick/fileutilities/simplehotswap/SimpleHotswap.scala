@@ -40,6 +40,10 @@ object SimpleHotswap {
 		instance.storeConfig()
 		Some(instance)
 	}
+
+	private def initProperties: PropertiesInstance =
+		PropertiesInstance(Set[TypeHandler[_]](TypeHandler.buildHandler('P',
+			(s: String) => Try(Paths.get(s)).toOption)))
 }
 
 /**
@@ -129,17 +133,13 @@ class SimpleHotswap(val instanceFolder: Path, val targetFile: Path, val linkType
 
 
 	/**
-	 * Creates a new config file for the tool to use
-	 *
-	 * @return the properties file
+	 * Stores the config
 	 */
-	def storeConfig(): PropertiesInstance = {
-		val prop = PropertiesInstance(Set[TypeHandler[_]](TypeHandler.buildHandler('P',
-			(s: String) => Try(Paths.get(s)).toOption)))
+	def storeConfig(): Boolean = {
+		val prop = SimpleHotswap.initProperties
 		prop.setProperty("targetFile", targetFile)
 		prop.setProperty("useLinks", linkType)
-		prop.setProperty("instances", instanceFolder)
-		prop
+		prop.write(instanceFolder.resolve("hotswap.properties"))
 	}
 }
 
