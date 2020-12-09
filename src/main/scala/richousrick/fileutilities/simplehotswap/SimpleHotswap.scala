@@ -41,6 +41,11 @@ object SimpleHotswap {
 		Some(instance)
 	}
 
+	/**
+	 * Creates a properties instance with support for Paths
+	 *
+	 * @return a properties instance with support for Paths
+	 */
 	private def initProperties: PropertiesInstance =
 		PropertiesInstance(Set[TypeHandler[_]](TypeHandler.buildHandler('P',
 			(s: String) => Try(Paths.get(s)).toOption)))
