@@ -43,6 +43,35 @@ object SimpleHotswap {
 	}
 
 	/**
+	 * Loads an instance from a specified folder
+	 *
+	 * @param instanceFolder Folder storing the hotswap.properties file that should be loaded
+	 * @return An instances loaded from the specified file. If one exists. None otherwise
+	 */
+	def loadInstance(instanceFolder: Path): Option[SimpleHotswap] = {
+		val propertiesFile = instanceFolder.resolve("hotswap.properties")
+
+		if (Files.notExists(propertiesFile)) {
+			// fail if properties file does not exist
+			return None
+		}
+
+		val properties = initProperties
+		if (!properties.load(propertiesFile)) {
+			// fail if cannot load properties from the file
+			return None
+		}
+
+		// load properties from the file and use to create instance
+		(properties.getProperty[Path]("targetFile"), properties.getProperty[LinkType]("useLinks")) match {
+			case (Some(targetFile: Path), Some(linkType: LinkType)) => Some(new SimpleHotswap(instanceFolder,
+				targetFile,
+				linkType))
+			case _ => None
+		}
+	}
+
+	/**
 	 * Creates a properties instance with support for Paths
 	 *
 	 * @return a properties instance with support for Paths

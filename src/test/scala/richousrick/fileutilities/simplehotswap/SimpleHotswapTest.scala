@@ -103,4 +103,34 @@ class SimpleHotswapTest extends AnyFunSuite {
 
 		assert(SimpleHotswap.setupInstance(backupDir, targetFile, LinkType.Hard).isEmpty)
 	}
+
+	test("Load instance populates a new instance with the correct values") {
+		val (fs, targetFile) = MockUtils.generateMockFilesystemWin()
+		val instanceFolder = fs.getPath("""C:\data\backup""")
+
+		val generatedInstance = SimpleHotswap.setupInstance(instanceFolder, targetFile, LinkType.Hard)
+
+		assert(generatedInstance.isDefined)
+		val initialInstance: SimpleHotswap = generatedInstance.getOrElse(fail)
+
+
+		val loadedInstance = SimpleHotswap.loadInstance(instanceFolder)
+
+		loadedInstance match {
+			case None => fail
+			case Some(instance) =>
+				assert(instance.instanceFolder.toAbsolutePath.toString == initialInstance
+					.instanceFolder
+					.toAbsolutePath
+					.toString)
+				assert(instance.targetFile.toAbsolutePath.toString == initialInstance.targetFile.toAbsolutePath.toString)
+				assert(instance.linkType == initialInstance.linkType)
+		}
+	}
+
+	test("Load instance fails safe when loading a folder not containing the correct file") {
+		val (fs, targetFile) = MockUtils.generateMockFilesystemWin()
+		val instanceFolder = fs.getPath("""C:\data\backup""")
+		assert(SimpleHotswap.loadInstance(instanceFolder).isEmpty)
+	}
 }
