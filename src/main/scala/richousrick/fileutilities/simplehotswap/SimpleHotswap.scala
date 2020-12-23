@@ -19,6 +19,7 @@ object SimpleHotswap {
 	 * @param instanceFolder location to store the current instance
 	 * @param targetFile     file to be moved and replaced with a link
 	 * @param linkType       method of linking the target instance to the current version
+	 * @return The generated instance if successful
 	 */
 	def setupInstance(instanceFolder: Path, targetFile: Path, linkType: LinkType): Option[SimpleHotswap] = {
 		Files.createDirectories(instanceFolder)

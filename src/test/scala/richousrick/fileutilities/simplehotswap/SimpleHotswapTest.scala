@@ -97,7 +97,7 @@ class SimpleHotswapTest extends AnyFunSuite {
 		assert(Files.readAllBytes(targetFile) sameElements Files.readAllBytes(backupInstance))
 	}
 
-	test("Setup a hard linked backup directory") {
+	test("Setup a hard linked backup directory should fail safe") {
 		val (fs, targetFile, filesToBackup) = MockUtils.generateMockFilesystemWinDir()
 		val backupDir = fs.getPath("""C:\data\backup""")
 
